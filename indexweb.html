@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB.lab - Pemrograman Web & Pengembangan Aplikasi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        'neon-purple': '#a855f7',
+                        'neon-pink': '#ec4899',
+                        'deep-slate-800': '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans antialiased min-h-screen flex flex-col selection:bg-neon-purple/50 selection:text-slate-950">
+
+    <!-- Header Navbar -->
+    <nav class="sticky top-0 z-50 backdrop-blur-lg bg-slate-900/90 border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-neon-purple font-mono font-bold shadow-inner text-lg">
+                    { }
+                </div>
+                <div>
+                    <span class="text-xl font-bold tracking-tight text-white font-mono">WEB<span class="text-neon-purple">.lab</span></span>
+                    <span class="block text-[10px] text-slate-400 font-medium tracking-wider uppercase">Pusat Pembelajaran WebDev</span>
+                </div>
+            </div>
+            
+            <div class="hidden sm:flex items-center space-x-4 font-mono text-xs">
+                <span class="inline-flex items-center px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 shadow-sm">
+                    <span class="w-2.5 h-2.5 mr-2.5 bg-sky-400 rounded-full animate-pulse"></span>
+                    Halaman Utama (v1.0)
+                </span>
+                <span class="inline-flex items-center px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 shadow-sm">
+                    <span class="w-2.5 h-2.5 mr-2.5 bg-neon-purple rounded-full"></span>
+                    Status Server: AKTIF
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section / CLI Header -->
+    <header class="relative border-b border-slate-800/80 bg-slate-900 py-20 lg:py-24 overflow-hidden">
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b30_1px,transparent_1px),linear-gradient(to_bottom,#1e293b30_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
+        
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 md:grid-cols-3 gap-12 items-center text-left">
+            <div class="md:col-span-2">
+                <div class="inline-flex items-center gap-3 px-4 py-1 rounded-md bg-slate-800 border border-slate-700 text-neon-purple font-mono text-xs mb-8">
+                    <span class="text-slate-500">$> root@webdev:~#</span> ./start_modul_hub
+                </div>
+                
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tighter text-white mb-6 leading-tight">
+                    Hub Dokumentasi & <br> Modul Praktikum
+                </h1>
+                
+                <p class="text-slate-400 text-base sm:text-lg max-w-4xl font-normal leading-relaxed mb-10">
+                    Pusat repositori digital untuk lembar kerja praktik dan modul pembelajaran komprehensif bagi pengembangan web interaktif berbasis HTML5, CSS3, JavaScript ES6+, Framework Responsif, Git, Deployment, hingga Proyek Akhir.
+                </p>
+
+                <div class="flex items-center justify-start gap-3">
+                    <span class="text-xs font-mono font-semibold px-4 py-2 rounded-md bg-neon-purple/20 border border-neon-purple text-neon-purple">
+                        TOTAL: 20 BAB
+                    </span>
+                    <span class="text-xs font-mono font-semibold px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-400">
+                        9 DASAR
+                    </span>
+                    <span class="text-xs font-mono font-semibold px-4 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-400">
+                        11 LANJUTAN
+                    </span>
+                </div>
+            </div>
+
+            <div class="relative flex items-center justify-center">
+                <!-- Visual Visual diagram arsitektur web -->
+                <svg class="w-64 h-64 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M16 4h4a2 2 0 012 2v12a2 2 0 01-2 2h-4m-4 0h-4a2 2 0 01-2-2v-12a2 2 0 012-2h4M9 14h6m-3-3v6m0-6V7"/>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center text-neon-purple">
+                    <svg class="w-20 h-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 21a9 9 0 100-18 9 9 0 000 18z"/>
+                        <path d="M12 3v18m-9-9h18"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full space-y-16">
+
+        <!-- SEKSI 1: Modul Dasar / Konsep Utama (Bab 1 - 9) -->
+        <section>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4 border-b border-slate-800/60 pb-5">
+                <div>
+                    <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3 font-mono">
+                        <span class="text-neon-purple">#</span> Modul Dasar Pemrograman Web
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1.5 max-w-2xl">Landasan teknis arsitektur web, HTML5, penataan CSS, serta pemrograman client-side JavaScript dasar.</p>
+                </div>
+                <span class="text-xs font-mono font-semibold px-4 py-2 rounded-md bg-neon-purple/20 border border-neon-purple text-neon-purple shadow-sm">
+                    9 BAB DASAR
+                </span>
+            </div>
+
+            <div id="dasarCardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Kartu Modul Dasar akan digenerate otomatis melalui script -->
+            </div>
+        </section>
+
+        <!-- SEKSI 2: Modul Lanjutan & Pengembangan Proyek (Bab 10 - 20) -->
+        <section>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4 border-b border-slate-800/60 pb-5">
+                <div>
+                    <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3 font-mono">
+                        <span class="text-neon-pink">#</span> Modul Lanjutan & Pengembangan
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1.5 max-w-2xl">Desain responsif, manipulasi DOM & Fetch API, Git/GitHub, Security, hingga Proyek Akhir.</p>
+                </div>
+                <span class="text-xs font-mono font-semibold px-4 py-2 rounded-md bg-neon-pink/20 border border-neon-pink text-neon-pink shadow-sm">
+                    11 BAB LANJUTAN
+                </span>
+            </div>
+
+            <div id="lanjutanCardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Kartu Modul Lanjutan akan digenerate otomatis melalui script -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-900 py-8 text-center text-xs text-slate-500 font-mono">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>&copy; 2026 Web Development Learning Center.</p>
+            <p class="text-slate-400">Environment: <span class="text-neon-purple">HTML5 / CSS3 / ES6+ / Tailwind v3.4</span></p>
+        </div>
+        <!-- Kredensial / Watermark Bagian Bawah -->
+        <div class="mt-6 pt-6 border-t border-slate-800/40 text-center">
+            <p class="text-slate-400 text-xs font-mono font-medium tracking-wider">
+                Developed by <span class="text-neon-purple font-semibold">Simon Murdani Yusuf</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Data Modul Dasar (Bab 1 - 9)
+        const dasarModules = [
+            {
+                code: "BAB-01",
+                file: "lkpd_web_1.html",
+                title: "Bab 1: Teknologi Aplikasi Web",
+                kd: "KD: Memahami & mempresentasikan konsep/teknologi pengembangan aplikasi web.",
+                desc: "Pengenalan dunia IT, perangkat lunak web, dan dasar-dasar arsitektur teknologi web."
+            },
+            {
+                code: "BAB-02",
+                file: "lkpd_web_2.html",
+                title: "Bab 2: Format Teks dengan HTML",
+                kd: "KD: Menerapkan format teks pada halaman web.",
+                desc: "Dasar HTML (HyperText Markup Language) dan cara memperindah serta mengatur format teks menggunakan tag HTML."
+            },
+            {
+                code: "BAB-03",
+                file: "lkpd_web_3.html",
+                title: "Bab 3: Tabel dengan HTML",
+                kd: "KD: Menerapkan format tabel pada halaman web.",
+                desc: "Struktur tag <table>, <tr>, <td>, serta atribut-atribut tabel untuk menyusun data berbaris dan berkolom."
+            },
+            {
+                code: "BAB-04",
+                file: "lkpd_web_4.html",
+                title: "Bab 4: Format Multimedia dengan HTML",
+                kd: "KD: Menerapkan tampilan multimedia pada halaman web.",
+                desc: "Menyisipkan gambar, audio, video, dan animasi untuk membuat tampilan web lebih menarik."
+            },
+            {
+                code: "BAB-05",
+                file: "lkpd_web_5.html",
+                title: "Bab 5: Link dengan HTML",
+                kd: "KD: Menerapkan format kaitan (hyperlink) pada halaman web.",
+                desc: "Menghubungkan halaman web satu dengan yang lain atau merujuk ke sumber/dokumen eksternal menggunakan tag hyperlink."
+            },
+            {
+                code: "BAB-06",
+                file: "lkpd_web_6.html",
+                title: "Bab 6: Format Formulir dengan HTML",
+                kd: "KD: Menerapkan format formulir (form) pada halaman web.",
+                desc: "Anatomi form, elemen masukan (input, select, textarea) untuk menerima masukan (input) data dari pengguna."
+            },
+            {
+                code: "BAB-07",
+                file: "lkpd_web_7.html",
+                title: "Bab 7: CSS (Cascading Style Sheets)",
+                kd: "KD: Menerapkan style pada halaman web.",
+                desc: "Anatomi dan cara kerja CSS untuk mengatur tata letak, warna, serta gaya halaman web agar kodenya lebih terstruktur dan efisien."
+            },
+            {
+                code: "BAB-08",
+                file: "lkpd_web_8.html",
+                title: "Bab 8: Client Side Programming (Pengenalan)",
+                kd: "KD: Memahami & mempresentasikan client side scripting.",
+                desc: "Konsep dasar Client Side Scripting vs Server Side Scripting serta perannya dalam ekosistem pemrograman web."
+            },
+            {
+                code: "BAB-09",
+                file: "lkpd_web_9.html",
+                title: "Bab 9: Client Side Programming (Web Interaktif)",
+                kd: "KD: Menerapkan client side scripting untuk membuat halaman web interaktif.",
+                desc: "Pemrograman JavaScript (variabel, operator, percabangan if/switch, fungsi, dan event handler) untuk antarmuka dinamis."
+            }
+        ];
+
+        // Data Modul Lanjutan & Kelompok Pemfokusan (Bab 10 - 20)
+        const lanjutanModules = [
+            {
+                code: "BAB-10",
+                group: "Desain Web Modern & Responsif",
+                file: "lkpd_web_10.html",
+                title: "Bab 10: Responsive Web Design dengan Flexbox & CSS Grid",
+                kd: "KD: Menerapkan teknik layouting modern dan media queries untuk tampilan web multi-perangkat.",
+                desc: "Flexbox layout, CSS Grid, Breakpoints, serta prinsip Mobile-First Design."
+            },
+            {
+                code: "BAB-11",
+                group: "Desain Web Modern & Responsif",
+                file: "lkpd_web_11.html",
+                title: "Bab 11: Framework CSS Modern (Bootstrap / Tailwind CSS)",
+                kd: "KD: Menerapkan framework CSS dalam mempercepat pembuatan antarmuka web.",
+                desc: "Komponen Bootstrap/Tailwind, utilitas class, sistem grid framework, dan kustomisasi komponen interaktif bawaan."
+            },
+            {
+                code: "BAB-12",
+                group: "JavaScript Interaktif & Manipulasi DOM",
+                file: "lkpd_web_12.html",
+                title: "Bab 12: Manipulasi Document Object Model (DOM) dengan JS",
+                kd: "KD: Menerapkan skrip JavaScript untuk manipulasi struktur dan konten halaman HTML secara dinamis.",
+                desc: "Seleksi elemen DOM (querySelector), manipulasi teks/properti/CSS via JS, serta event handling pada komponen UI."
+            },
+            {
+                code: "BAB-13",
+                group: "JavaScript Interaktif & Manipulasi DOM",
+                file: "lkpd_web_13.html",
+                title: "Bab 13: Validasi Form Tingkat Lanjut & Local Storage",
+                kd: "KD: Menerapkan validasi data input dan penyimpanan data sementara pada sisi klien.",
+                desc: "RegEx untuk pemformatan email/password, Web Storage API (localStorage & sessionStorage), serta manipulasi status form."
+            },
+            {
+                code: "BAB-14",
+                group: "JavaScript Interaktif & Manipulasi DOM",
+                file: "lkpd_web_14.html",
+                title: "Bab 14: Asynchronous JavaScript dan Fetch API",
+                kd: "KD: Menerapkan konsep asynchronous programming untuk mengambil data eksternal tanpa reload halaman.",
+                desc: "Konsep Promise, async/await, pengenalan JSON, dan penggunaan fetch() untuk mengambil data dari Public API."
+            },
+            {
+                code: "BAB-15",
+                group: "Alat Pengembangan & Standar Industri",
+                file: "lkpd_web_15.html",
+                title: "Bab 15: Kontrol Versi Proyek dengan Git dan GitHub",
+                kd: "KD: Menerapkan sistem pelacakan versi kode (version control) dalam alur kerja pengembangan web.",
+                desc: "Perintah dasar Git (commit, branch, push, pull), pengelolaan repositori di GitHub, serta kolaborasi tim."
+            },
+            {
+                code: "BAB-16",
+                group: "Alat Pengembangan & Standar Industri",
+                file: "lkpd_web_16.html",
+                title: "Bab 16: Hosting, Domain, dan Deployment Halaman Web",
+                kd: "KD: Menerapkan prosedur peluncuran (deployment) situs web interaktif ke server publik.",
+                desc: "Pengenalan domain & hosting, peluncuran gratis via GitHub Pages / Vercel / Netlify, serta pengujian site performance."
+            },
+            {
+                code: "BAB-17",
+                group: "Transisi ke Server-Side & Arsitektur Modern",
+                file: "lkpd_web_17.html",
+                title: "Bab 17: Pengenalan Server Side Scripting & Database Dasar",
+                kd: "KD: Memahami arsitektur Client-Server dan konsep dasar pemrosesan data di sisi server.",
+                desc: "Perbedaan cara kerja server vs client, pengenalan singkat PHP/Node.js, serta pengenalan alur CRUD."
+            },
+            {
+                code: "BAB-18",
+                group: "Transisi ke Server-Side & Arsitektur Modern",
+                file: "lkpd_web_18.html",
+                title: "Bab 18: Pengenalan Web Security Dasar",
+                kd: "KD: Menerapkan kaidah keamanan dasar pada pembuatan aplikasi web.",
+                desc: "Bahaya Cross-Site Scripting (XSS), SQL Injection dasar, pemanfaatan HTTPS, dan validasi sanitizing input."
+            },
+            {
+                code: "BAB-19",
+                group: "Proyek & Portofolio",
+                file: "lkpd_web_19.html",
+                title: "Bab 19: Analisis UX/UI dan Wireframing Aplikasi Web",
+                kd: "KD: Menerapkan prinsip UX dan UI dalam merancang tata letak web.",
+                desc: "Pembuatan wireframe/prototyping dengan Figma/Canva, konsistensi tipografi, warna, dan aksesibilitas web (a11y)."
+            },
+            {
+                code: "BAB-20",
+                group: "Proyek & Portofolio",
+                file: "lkpd_web_20.html",
+                title: "Bab 20: Proyek Akhir: Aplikasi Web Portofolio Interaktif",
+                kd: "KD: Membuat produk web utuh yang mengintegrasikan HTML5, CSS3, JavaScript DOM/API, & di-deploy secara publik.",
+                desc: "Studi kasus pembuatan web portofolio pribadi atau aplikasi web sederhana (To-Do List, Weather App, Katalog Produk)."
+            }
+        ];
+
+        // Render Modul Dasar
+        const dasarGrid = document.getElementById('dasarCardGrid');
+        dasarModules.forEach(mod => {
+            const card = document.createElement('div');
+            card.className = "group relative p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-neon-purple/50 hover:shadow-xl hover:shadow-neon-purple/5 transition-all duration-300 flex flex-col justify-between overflow-hidden";
+            card.innerHTML = `
+                <div>
+                    <div class="flex items-center justify-between mb-4 pb-4 border-b border-slate-800">
+                        <span class="font-mono text-xs font-bold text-neon-purple bg-neon-purple/10 border border-neon-purple/40 px-3 py-1 rounded">
+                            ${mod.code}
+                        </span>
+                        <span class="text-[11px] font-mono text-slate-500">${mod.file}</span>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-100 mb-3 group-hover:text-neon-purple transition-colors duration-300">
+                        ${mod.title}
+                    </h3>
+                    <p class="text-[11px] font-medium text-neon-purple/90 bg-slate-800 border border-slate-700/60 px-3 py-1 rounded-md mb-4 leading-relaxed line-clamp-2">
+                        ${mod.kd}
+                    </div>
+                    <p class="text-slate-400 text-xs mb-6 font-normal leading-relaxed">
+                        <strong class="text-slate-300">Fokus:</strong> ${mod.desc}
+                    </p>
+                </div>
+                
+                <a href="${mod.file}" class="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-neon-purple/20 hover:text-white border border-slate-700/60 hover:border-neon-purple text-slate-200 text-xs font-mono font-semibold transition-all duration-300 flex items-center justify-between shadow-sm">
+                    <span class="flex items-center gap-2.5">
+                        <span>$> web.lab/${mod.file}</span>
+                    </span>
+                    <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </a>
+            `;
+            dasarGrid.appendChild(card);
+        });
+
+        // Render Modul Lanjutan
+        const lanjutanGrid = document.getElementById('lanjutanCardGrid');
+        lanjutanModules.forEach(mod => {
+            const card = document.createElement('div');
+            card.className = "group relative p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-neon-pink/50 hover:shadow-xl hover:shadow-neon-pink/5 transition-all duration-300 flex flex-col justify-between overflow-hidden";
+            card.innerHTML = `
+                <div>
+                    <div class="flex items-center justify-between mb-3.5 pb-3.5 border-b border-slate-800/80">
+                        <span class="font-mono text-xs font-bold text-neon-pink bg-neon-pink/10 border border-neon-pink/40 px-3 py-1 rounded">
+                            ${mod.code}
+                        </span>
+                        <span class="text-[11px] font-mono text-slate-500">${mod.file}</span>
+                    </div>
+                    <div class="text-[10px] uppercase tracking-widest font-semibold text-neon-pink/80 mb-2.5">
+                        ${mod.group}
+                    </div>
+                    <h3 class="text-base font-bold text-slate-100 mb-3 group-hover:text-neon-pink transition-colors duration-300 leading-snug">
+                        ${mod.title}
+                    </h3>
+                    <p class="text-[11px] font-medium text-neon-pink/90 bg-slate-800 border border-slate-700/60 px-3 py-1 rounded-md mb-4 leading-relaxed line-clamp-2">
+                        ${mod.kd}
+                    </div>
+                    <p class="text-slate-400 text-xs mb-6 font-normal leading-relaxed line-clamp-3">
+                        <strong class="text-slate-300">Fokus:</strong> ${mod.desc}
+                    </p>
+                </div>
+                
+                <a href="${mod.file}" class="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-neon-pink/20 hover:text-white border border-slate-700/60 hover:border-neon-pink text-slate-200 text-xs font-mono font-semibold transition-all duration-300 flex items-center justify-between shadow-sm">
+                    <span class="flex items-center gap-2.5">
+                        <span>$> web.lab/${mod.file}</span>
+                    </span>
+                    <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </a>
+            `;
+            lanjutanGrid.appendChild(card);
+        });
+    </script>
+</body>
+</html>
