@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 10: Desain Web Modern & Responsif</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    /* Custom Simulasi CSS */
+    .sim-screen-transition { transition: width 0.5s ease-in-out; }
+    .custom-flex-layout { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+    .custom-flex-layout > div { flex: 1 1 calc(50% - 1rem); }
+    .custom-grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+          <i class="fa-brands fa-css3-alt text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 10: Desain Web Modern & Responsif</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Responsive Web Design, Flexbox, CSS Grid & Media Queries</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori RWD -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Desain Web Modern
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">Bab 10: RWD</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          <strong>Responsive Web Design (RWD)</strong> memastikan antarmuka web beradaptasi secara optimal pada berbagai ukuran layar (HP, Tablet, Desktop). Pendekatan ini diwujudkan melalui teknik layouting modern seperti Flexbox dan CSS Grid, serta penggunaan Media Queries dengan prinsip Mobile-First Design.
+        </p>
+
+        <!-- Teori Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-arrows-left-right text-blue-600"></i> Flexbox (Layout 1 Dimensi)</h4>
+            <p class="text-slate-600 mb-2">Ideal untuk menata elemen dalam satu baris (baris saja atau kolom saja). Mengatur ruang dan penyejajaran elemen secara dinamis.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              display: flex;<br>
+              flex-wrap: wrap;<br>
+              justify-content: space-between;
+            </div>
+          </div>
+          
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-table-cells-large text-blue-600"></i> CSS Grid (Layout 2 Dimensi)</h4>
+            <p class="text-slate-600 mb-2">Dirancang untuk struktur kompleks yang melibatkan baris sekaligus kolom. Sangat handal untuk layout galeri atau halaman utama.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              display: grid;<br>
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-mobile-screen text-blue-600"></i> Media Queries & Breakpoints</h4>
+            <p class="text-slate-600 mb-2">Aturan CSS yang hanya aktif jika resolusi perangkat memenuhi syarat tertentu (misal: layar lebih lebar dari 768px).</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              @media (min-width: 768px) {<br>
+              &nbsp;&nbsp;.menu-mobile { display: none; }<br>
+              }
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-arrow-up-right-dots text-blue-600"></i> Mobile-First Design</h4>
+            <p class="text-slate-600 mb-2">Prinsip merancang antarmuka untuk layar terkecil (HP) terlebih dahulu, lalu diperluas (scale-up) ke layar besar dengan Media Queries.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              /* CSS Default: HP */<br>
+              /* CSS @media min-width: Desktop */
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Eksperimen penerapan teknik Flexbox, Grid, dan Media Queries.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">2 Skenario</span>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Layout Galeri (Flexbox vs Grid) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-layer-group text-blue-600"></i> Simulasi 1: Galeri & Kartu Produk
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">Flexbox vs Grid</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Bandingkan perilaku penyusunan komponen secara dinamis antara <code class="font-bold">display: flex</code> (1D) dan <code class="font-bold">display: grid</code> (2D).</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3">
+                <div class="flex gap-2 mb-4">
+                  <button onclick="terapkanFlexbox()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs py-2 rounded-lg transition">Gunakan Flexbox</button>
+                  <button onclick="terapkanGrid()" class="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs py-2 rounded-lg transition">Gunakan CSS Grid</button>
+                </div>
+                
+                <!-- Display Box -->
+                <div id="sim1-layout-container" class="block bg-slate-200 p-2 rounded-lg min-h-[160px]">
+                  <div class="bg-white p-3 rounded shadow-sm border border-slate-300 text-center mb-2"><i class="fa-solid fa-box text-slate-400"></i> Produk A</div>
+                  <div class="bg-white p-3 rounded shadow-sm border border-slate-300 text-center mb-2"><i class="fa-solid fa-box text-slate-400"></i> Produk B</div>
+                  <div class="bg-white p-3 rounded shadow-sm border border-slate-300 text-center mb-2"><i class="fa-solid fa-box text-slate-400"></i> Produk C</div>
+                  <div class="bg-white p-3 rounded shadow-sm border border-slate-300 text-center mb-2"><i class="fa-solid fa-box text-slate-400"></i> Produk D</div>
+                </div>
+                <div id="sim1-indicator" class="mt-2 text-[10px] text-center font-mono font-bold text-slate-500">
+                  Mode Saat Ini: Block (Default)
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mt-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Uji coba teknik layouting di atas.</span>
+              <button onclick="catatSimulasi(1)" id="btn-catat-1" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs opacity-50 cursor-not-allowed" disabled>
+                <i class="fa-solid fa-plus"></i> Catat Hasil
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Media Queries Breakpoints -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-mobile-screen-button text-blue-600"></i> Simulasi 2: Breakpoints Navigasi
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">@media queries</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Simulasikan adaptasi tampilan UI Navigation Bar antara layar Smartphone (Mobile) dan Layar Desktop menggunakan Breakpoints.</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 flex flex-col items-center">
+                <div class="flex gap-2 w-full mb-4">
+                  <button onclick="toggleSimulasiResolusi('mobile')" class="flex-1 bg-slate-700 hover:bg-slate-800 text-white font-semibold text-xs py-2 rounded-lg transition"><i class="fa-solid fa-mobile-screen mr-1"></i> HP (320px)</button>
+                  <button onclick="toggleSimulasiResolusi('desktop')" class="flex-1 bg-slate-700 hover:bg-slate-800 text-white font-semibold text-xs py-2 rounded-lg transition"><i class="fa-solid fa-desktop mr-1"></i> Desktop (100%)</button>
+                </div>
+
+                <!-- Resizable Screen Wrapper -->
+                <div id="sim2-screen-wrapper" class="w-full bg-slate-300 rounded-lg p-2 flex justify-center overflow-hidden">
+                  <div id="sim2-screen" class="sim-screen-transition bg-white border border-slate-400 rounded w-full h-[120px] shadow-inner relative flex flex-col">
+                    <!-- Navbar -->
+                    <div class="w-full bg-blue-600 text-white p-2 flex justify-between items-center text-xs">
+                      <div class="font-bold">Logo</div>
+                      
+                      <!-- Hamburger (Mobile) -->
+                      <div id="sim2-hamburger" class="hidden cursor-pointer"><i class="fa-solid fa-bars text-lg"></i></div>
+                      
+                      <!-- Links (Desktop) -->
+                      <div id="sim2-navlinks" class="flex gap-3">
+                        <span class="hover:underline cursor-pointer">Home</span>
+                        <span class="hover:underline cursor-pointer">Produk</span>
+                        <span class="hover:underline cursor-pointer">Kontak</span>
+                      </div>
+                    </div>
+                    <div class="p-3 text-[10px] text-slate-500 text-center mt-4">
+                      Area Konten Website
+                    </div>
+                  </div>
+                </div>
+                <div id="sim2-indicator" class="mt-2 text-[10px] text-center font-mono font-bold text-slate-500">
+                  Resolusi Saat Ini: Desktop (Lebar Penuh)
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center mt-2">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Ubah resolusi layar untuk melihat efek.</span>
+              <button onclick="catatSimulasi(2)" id="btn-catat-2" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs opacity-50 cursor-not-allowed" disabled>
+                <i class="fa-solid fa-plus"></i> Catat Hasil
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi aktivitas eksperimen desain responsif.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Skenario Simulasi</th>
+                <th class="px-4 py-3">Teknik / Aturan CSS</th>
+                <th class="px-4 py-3">Aksi / Resolusi</th>
+                <th class="px-4 py-3">Perubahan Visual UI</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi: Desain Web Modern
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda terkait RWD, Flexbox, CSS Grid, dan Media Queries.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal PG</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan simulasi telah dikerjakan sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-blue-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // URL Web App Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    let lastSim1Log = { aksi: "", output: "", fitur: "" };
+    let lastSim2Log = { aksi: "", output: "", fitur: "" };
+
+    // [DATA CSV SISWA]
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON`; 
+    // Truncated data array for presentation. The actual app would load the full DB here.
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.getElementById('sel-nama');
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          opt.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // --- LOGIKA SIMULASI 1: FLEXBOX vs CSS GRID ---
+    function resetLayoutSim1() {
+      const container = document.getElementById('sim1-layout-container');
+      const children = container.querySelectorAll('div');
+      container.className = 'bg-slate-200 p-2 rounded-lg min-h-[160px] block';
+      children.forEach(c => c.className = 'bg-white p-3 rounded shadow-sm border border-slate-300 text-center mb-2');
+    }
+
+    function terapkanFlexbox() {
+      resetLayoutSim1();
+      const container = document.getElementById('sim1-layout-container');
+      const children = container.querySelectorAll('div');
+      
+      container.className = 'bg-slate-200 p-2 rounded-lg min-h-[160px] custom-flex-layout';
+      children.forEach(c => c.className = 'bg-white p-3 rounded shadow-sm border border-indigo-300 text-center text-indigo-700 font-medium');
+
+      document.getElementById('sim1-indicator').innerText = "Mode Saat Ini: Flexbox (display: flex; flex-wrap: wrap;)";
+      
+      let btn = document.getElementById('btn-catat-1');
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+      lastSim1Log.fitur = "display: flex";
+      lastSim1Log.aksi = "Klik Tombol Flexbox";
+      lastSim1Log.output = "Kartu berjajar dan turun ke baris baru (flex-wrap) dengan proporsi 50% ruang";
+
+      showToast("Berhasil", "Layout Flexbox diterapkan ke kontainer.", "success");
+    }
+
+    function terapkanGrid() {
+      resetLayoutSim1();
+      const container = document.getElementById('sim1-layout-container');
+      const children = container.querySelectorAll('div');
+      
+      container.className = 'bg-slate-200 p-2 rounded-lg min-h-[160px] custom-grid-layout';
+      children.forEach(c => c.className = 'bg-white p-3 rounded shadow-sm border border-violet-300 text-center text-violet-700 font-medium');
+
+      document.getElementById('sim1-indicator').innerText = "Mode Saat Ini: CSS Grid (grid-template-columns: repeat(auto-fit...))";
+      
+      let btn = document.getElementById('btn-catat-1');
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+      lastSim1Log.fitur = "display: grid";
+      lastSim1Log.aksi = "Klik Tombol CSS Grid";
+      lastSim1Log.output = "Kartu terdistribusi otomatis mengisi ruang kolom (auto-fit/minmax) secara struktural 2D";
+
+      showToast("Berhasil", "Layout CSS Grid diterapkan ke kontainer.", "success");
+    }
+
+    // --- LOGIKA SIMULASI 2: MEDIA QUERIES ---
+    function toggleSimulasiResolusi(type) {
+      const screenEl = document.getElementById('sim2-screen');
+      const hamburger = document.getElementById('sim2-hamburger');
+      const navlinks = document.getElementById('sim2-navlinks');
+      const indicator = document.getElementById('sim2-indicator');
+      
+      if (type === 'mobile') {
+        screenEl.style.width = '320px';
+        hamburger.classList.remove('hidden');
+        hamburger.classList.add('block');
+        navlinks.classList.add('hidden');
+        navlinks.classList.remove('flex');
+        indicator.innerText = "Resolusi Saat Ini: Mobile (Lebar 320px)";
+        
+        lastSim2Log.fitur = "@media (max-width: ...)";
+        lastSim2Log.aksi = "Ubah ke Resolusi HP (320px)";
+        lastSim2Log.output = "Menu Desktop disembunyikan, Hamburger Menu muncul";
+        showToast("Breakpoints Terpicu", "Tampilan beralih ke desain Mobile-First", "info");
+      } else {
+        screenEl.style.width = '100%';
+        hamburger.classList.add('hidden');
+        hamburger.classList.remove('block');
+        navlinks.classList.remove('hidden');
+        navlinks.classList.add('flex');
+        indicator.innerText = "Resolusi Saat Ini: Desktop (Lebar Penuh)";
+        
+        lastSim2Log.fitur = "@media (min-width: ...)";
+        lastSim2Log.aksi = "Ubah ke Resolusi Desktop (100%)";
+        lastSim2Log.output = "Hamburger Menu disembunyikan, Teks Menu Navigasi berjajar horizontal";
+        showToast("Breakpoints Terpicu", "Tampilan meluas beradaptasi untuk Desktop", "info");
+      }
+
+      let btn = document.getElementById('btn-catat-2');
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        logEntry = {
+          modul: "Simulasi 1: Galeri & Kartu Produk",
+          fitur: lastSim1Log.fitur,
+          input: lastSim1Log.aksi,
+          output: lastSim1Log.output
+        };
+      } else if (simNum === 2) {
+        logEntry = {
+          modul: "Simulasi 2: Breakpoints Navigasi",
+          fitur: lastSim2Log.fitur,
+          input: lastSim2Log.aksi,
+          output: lastSim2Log.output
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil simulasi berhasil dimasukkan ke tabel.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 text-[11px] font-mono text-slate-600 bg-slate-50 rounded">${row.fitur}</td>
+          <td class="px-4 py-3 text-slate-700 italic">${row.input}</td>
+          <td class="px-4 py-3 font-bold text-slate-900">${row.output}</td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Skenario Simulasi,Teknik CSS,Aksi Resolusi,Perubahan Visual\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.fitur}","${d.input}","${d.output}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "WebTech_LKPD10_RWD_FlexGrid.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil praktikum terunduh.", "success");
+    }
+
+    // QUESTION BANK LKPD 10 (20 SOAL - RWD, Flexbox, Grid)
+    const questionBankWeb = [
+      { id: 1, q: "Apa tujuan utama dari pendekatan Responsive Web Design (RWD)?", options: ["A. Membuat website memuat lebih cepat di komputer", "B. Menyediakan desain yang dapat beradaptasi pada berbagai ukuran layar secara optimal", "C. Menghapus kebutuhan akan JavaScript di frontend", "D. Mencegah website dibuka di perangkat mobile", "E. Membuat animasi otomatis di halaman web"], ans: "B" },
+      { id: 2, q: "Properti CSS apa yang digunakan untuk mengaktifkan antarmuka berbasis Flexbox pada sebuah elemen container?", options: ["A. layout: flex;", "B. display: flexbox;", "C. display: block;", "D. display: flex;", "E. position: flex;"], ans: "D" },
+      { id: 3, q: "Secara arsitektur, CSS Flexbox paling ideal dan dirancang untuk menangani layout berapa dimensi?", options: ["A. 1 Dimensi (baris atau kolom saja)", "B. 2 Dimensi (baris dan kolom bersamaan)", "C. 3 Dimensi", "D. Tidak memiliki dimensi", "E. Bebas ke segala arah tanpa batasan"], ans: "A" },
+      { id: 4, q: "Untuk merancang struktur tata letak yang kompleks yang melibatkan kontrol baris dan kolom secara bersamaan, teknik apa yang direkomendasikan?", options: ["A. CSS Float", "B. CSS Flexbox", "C. CSS Grid", "D. HTML Tables", "E. CSS Inline"], ans: "C" },
+      { id: 5, q: "Aturan dalam CSS yang memungkinkan pengaplikasian gaya (style) berbeda berdasarkan kondisi perangkat (seperti lebar layar) disebut?", options: ["A. Pseudo-classes", "B. Animations", "C. Transitions", "D. Media Queries", "E. Keyframes"], ans: "D" },
+      { id: 6, q: "Prinsip merancang website dengan mendahulukan tampilan untuk layar kecil (HP) baru kemudian disesuaikan ke layar besar disebut?", options: ["A. Desktop-First Design", "B. Graceful Degradation", "C. Mobile-First Design", "D. Adaptive Layout", "E. Fixed Width Layout"], ans: "C" },
+      { id: 7, q: "Dalam CSS Flexbox, properti apa yang mengatur penyejajaran (alignment) item pada sumbu utama (main-axis)?", options: ["A. align-items", "B. flex-direction", "C. align-content", "D. justify-content", "E. gap"], ans: "D" },
+      { id: 8, q: "Properti Flexbox mana yang memaksa elemen anak (items) turun ke baris baru apabila ruang kontainer sudah tidak mencukupi?", options: ["A. flex-wrap: wrap;", "B. flex-direction: column;", "C. justify-content: space-between;", "D. align-items: stretch;", "E. display: block;"], ans: "A" },
+      { id: 9, q: "Pada CSS Grid, fungsi dari properti 'grid-template-columns' adalah...", options: ["A. Mengatur jarak vertikal antar baris", "B. Menentukan jumlah dan lebar kolom dalam grid", "C. Mengubah warna latar setiap kolom", "D. Menyelaraskan teks di dalam sel", "E. Membuat grid menjadi responsif tanpa media query"], ans: "B" },
+      { id: 10, q: "Apa fungsi dari fungsi minmax() pada aturan CSS Grid seperti 'minmax(200px, 1fr)'?", options: ["A. Menghapus elemen jika lebih kecil dari 200px", "B. Menetapkan lebar minimum 200px dan maksimum mengikuti sisa ruang (1fr)", "C. Membatasi tinggi elemen maksimal 200px", "D. Menyesuaikan gambar menjadi 200 pixel", "E. Memastikan resolusi layar minimal 200px"], ans: "B" },
+      { id: 11, q: "Unit pengukuran khusus pada CSS Grid, yaitu 'fr', merupakan singkatan dari...", options: ["A. Frame", "B. Free", "C. Fraction (Pecahan ruang kosong)", "D. Front", "E. Fixed Rate"], ans: "C" },
+      { id: 12, q: "Bagaimana sintaks penulisan media query untuk menargetkan perangkat dengan lebar layar minimal 768px?", options: ["A. @media screen (max-width: 768px)", "B. @media (min-width: 768px)", "C. @media only (width=768px)", "D. @media (screen >= 768px)", "E. media-query (min-width: 768)"], ans: "B" },
+      { id: 13, q: "Mengapa desain 'Hamburger Menu' (ikon tiga garis) sangat umum dan disarankan pada tampilan mobile?", options: ["A. Untuk memperindah tampilan header", "B. Menghemat ruang layar yang terbatas pada smartphone dengan menyembunyikan navigasi lengkap", "C. Agar website terlihat lebih kompleks", "D. Wajib digunakan menurut standar HTML5", "E. Mempercepat loading time CSS"], ans: "B" },
+      { id: 14, q: "Jika kita ingin menyembunyikan sebuah elemen pada tampilan mobile secara utuh, properti CSS apa yang digunakan?", options: ["A. opacity: 0;", "B. visibility: hidden;", "C. display: none;", "D. color: transparent;", "E. width: 0px;"], ans: "C" },
+      { id: 15, q: "Dalam CSS Flexbox (dengan baris sebagai sumbu utama), 'align-items' digunakan untuk mengatur posisi item pada...", options: ["A. Sumbu silang (cross-axis) / vertikal", "B. Sumbu utama (main-axis) / horizontal", "C. Luar kontainer", "D. Urutan elemen DOM", "E. Indeks Z (Z-index)"], ans: "A" },
+      { id: 16, q: "Dalam Responsive Web Design, disarankan untuk menggunakan satuan pengukuran relatif. Satuan mana yang merupakan satuan relatif?", options: ["A. px (Pixels)", "B. pt (Points)", "C. cm (Centimeters)", "D. % (Persentase) atau em/rem", "E. in (Inches)"], ans: "D" },
+      { id: 17, q: "Tag HTML <meta name='viewport' content='width=device-width, initial-scale=1.0'> diletakkan pada bagian <head>. Fungsinya adalah...", options: ["A. Menjadikan website lebih aman dari hacker", "B. Memaksa browser mengatur lebar area rendering sesuai dengan lebar perangkat", "C. Menambahkan ikon di tab browser", "D. Mengubah gaya font secara global", "E. Mengaktifkan JavaScript di mobile"], ans: "B" },
+      { id: 18, q: "Properti 'gap' yang kini bisa digunakan pada CSS Flexbox dan CSS Grid berfungsi secara spesifik untuk...", options: ["A. Mengatur margin di luar kontainer", "B. Membuat jarak seragam di antara baris dan kolom di dalam kontainer tanpa memengaruhi bagian tepi", "C. Memberi warna latar transparan", "D. Menyembunyikan elemen yang berlebih", "E. Membuat garis border (bingkai) tebal"], ans: "B" },
+      { id: 19, q: "Saat menerapkan Mobile-First Design, media query yang digunakan biasanya berfokus pada peningkatan layout (scaling up). Kondisi apa yang umum dipakai?", options: ["A. max-width", "B. min-width", "C. max-height", "D. orientation: portrait", "E. hover"], ans: "B" },
+      { id: 20, q: "Dalam implementasi CSS Grid: 'grid-template-columns: repeat(3, 1fr);' akan menghasilkan...", options: ["A. 1 kolom dengan ukuran 3 kali lipat layar", "B. 3 kolom dengan lebar yang masing-masing sama besar", "C. 3 baris dengan tinggi berbeda-beda", "D. Kolom sebanyak mungkin sampai layar penuh", "E. Grid akan diulang 3 kali pada halaman"], ans: "B" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-blue-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-blue-600">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 10: Desain Web Modern & Responsif",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai konsep tata letak responsif modern.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali mengenai penempatan Grid dan Media Queries.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi kembali materi teori Breakpoints dan Flexbox.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-blue-500";
+      if (type === "success") icon = "fa-circle-check text-emerald-500";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-500";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>

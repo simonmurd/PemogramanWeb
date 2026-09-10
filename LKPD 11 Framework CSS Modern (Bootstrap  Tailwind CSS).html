@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 11: Framework CSS Modern (Bootstrap / Tailwind CSS)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2.5 rounded-xl text-white">
+          <i class="fa-brands fa-bootstrap text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 11: Framework CSS Modern</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Bootstrap & Tailwind CSS: Grid System, Utility Class, dan Interaktivitas Komponen</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Framework CSS Modern -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Framework CSS Modern (Bootstrap & Tailwind CSS)
+          </h2>
+          <span class="text-[11px] bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-1 rounded-full border border-indigo-200">Bab 11: Framework CSS</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          <strong>Framework CSS</strong> menyediakan kumpulan komponen antarmuka antardepan (UI) siap pakai dan sistem utilitas tata letak responsif. Menggunakan framework seperti <strong>Bootstrap</strong> atau <strong>Tailwind CSS</strong> memungkinkan pengembang melakukan <em>rapid prototyping</em> (pembuatan prototipe antarmuka secara cepat, rapi, dan konsisten) tanpa harus menuliskan CSS dari awal.
+        </p>
+
+        <!-- Teori Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-table-cells text-indigo-600"></i> Sistem Grid 12-Kolom</h4>
+            <p class="text-slate-600 mb-2">Layar dibagi menjadi 12 kolom horizontal fleksibel. Kombinasi kolom menentukan lebar elemen.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              &lt;!-- Bootstrap: 3 Kolom (12/3 = 4) --&gt;<br>
+              &lt;div class="col-md-4"&gt;Widget&lt;/div&gt;<br>
+              &lt;!-- Tailwind: Grid 3 Kolom --&gt;<br>
+              &lt;div class="grid grid-cols-1 md:grid-cols-3"&gt;
+            </div>
+          </div>
+          
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-cubes text-indigo-600"></i> Utility Class (Pendekatan Utilitas)</h4>
+            <p class="text-slate-600 mb-2">Kelas pembantu cepat untuk margin (<code class="font-bold">m-2</code>), padding (<code class="font-bold">p-4</code>), warna (<code class="font-bold">bg-blue-500</code>), dan flexbox.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              &lt;div class="flex items-center p-4 bg-slate-100 rounded-xl shadow-md"&gt;<br>
+              &nbsp;&nbsp;&lt;span class="text-sm font-bold text-slate-800"&gt;Card&lt;/span&gt;<br>
+              &lt;/div&gt;
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-mobile-screen text-indigo-600"></i> Breakpoints Responsif</h4>
+            <p class="text-slate-600 mb-2">Aturan titik henti responsif (<code class="font-bold">sm</code>, <code class="font-bold">md</code>, <code class="font-bold">lg</code>, <code class="font-bold">xl</code>) menyesuaikan tampilan antarperangkat.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              sm: &ge; 640px (Mobile HP)<br>
+              md: &ge; 768px (Tablet)<br>
+              lg: &ge; 1024px (Desktop Laptop)
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-window-restore text-indigo-600"></i> Data Attributes & Komponen Bawaan</h4>
+            <p class="text-slate-600 mb-2">Komponen seperti Navbar & Modal menggunakan atribut data bawaan framework untuk interaktivitas tanpa skrip JS murni.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              &lt;button data-bs-toggle="modal"<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data-bs-target="#myModal"&gt;<br>
+              &nbsp;&nbsp;Buka Modal Dialog<br>
+              &lt;/button&gt;
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif Framework CSS
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Praktikum penerapan sistem grid dashboard dan interaktivitas komponen bawaan (Navbar & Modal).</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">2 Skenario</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Rapid Prototyping Dashboard dengan Grid System -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-border-all text-indigo-600"></i> Simulasi 1: Rapid Prototyping Dashboard Grid
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">12-Column Grid</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Uji pengaturan tata letak dashboard interaktif dengan memilih sistem grid 12 kolom atau utility class breakpoint (<code class="font-mono">col-md-*</code> / <code class="font-mono">grid-cols-*</code>).</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Konfigurasi Grid Dashboard</label>
+                    <select id="sim1-grid-type" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white" onchange="renderGridPreview()">
+                      <option value="3-cols">3 Kolom (col-md-4 / grid-cols-3)</option>
+                      <option value="2-cols">2 Kolom (col-md-6 / grid-cols-2)</option>
+                      <option value="4-cols">4 Kolom (col-md-3 / grid-cols-4)</option>
+                      <option value="asymmetric">Asimetris (Sidebar col-md-3 + Main col-md-9)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Simulasi Ukuran Layar</label>
+                    <select id="sim1-screen-view" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white" onchange="renderGridPreview()">
+                      <option value="desktop">Desktop / Tablet (&ge; md / 768px)</option>
+                      <option value="mobile">Mobile HP (&lt; md / &lt; 768px)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="text-[11px] font-mono bg-slate-900 text-emerald-400 p-2 rounded-lg" id="sim1-code-preview">
+                  &lt;div class="grid grid-cols-1 md:grid-cols-3 gap-3"&gt;
+                </div>
+
+                <!-- Live Dashboard Preview -->
+                <div class="p-3 bg-slate-200/60 rounded-xl border border-slate-300 min-h-[140px]" id="sim1-grid-container">
+                  <!-- Dynamic grid items rendered via JS -->
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mt-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Silakan ubah konfigurasi grid di atas.</span>
+              <button onclick="catatSimulasi(1)" id="btn-catat-1" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil Grid
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Interaktivitas Komponen Bawaan (Navbar & Modal) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-window-maximize text-indigo-600"></i> Simulasi 2: Navbar & Modal Dialog
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">Data-Attributes UI</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Uji komponen bawaan framework: Navigasi responsif (Navbar Collapse) dan Kotak Dialog Pop-up (Modal) memanfaatkan atribut data bawaan.</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-4">
+                
+                <!-- Navbar Component Demo -->
+                <div class="border border-slate-300 rounded-xl bg-indigo-900 text-white overflow-hidden shadow-xs">
+                  <div class="p-2.5 flex justify-between items-center bg-indigo-950">
+                    <span class="font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-layer-group text-indigo-400"></i> MyWeb App</span>
+                    <button onclick="toggleNavbarCollapse()" class="p-1 px-2 border border-indigo-700 rounded text-[10px] hover:bg-indigo-800">
+                      <i class="fa-solid fa-bars"></i>
+                    </button>
+                  </div>
+                  <div id="sim2-navbar-menu" class="hidden p-3 bg-indigo-900 text-xs space-y-1.5 border-t border-indigo-800">
+                    <div class="p-1 px-2 rounded hover:bg-indigo-800 cursor-pointer"><i class="fa-solid fa-house mr-1 text-xs"></i> Beranda</div>
+                    <div class="p-1 px-2 rounded hover:bg-indigo-800 cursor-pointer"><i class="fa-solid fa-chart-line mr-1 text-xs"></i> Analitik Dashboard</div>
+                    <div class="p-1 px-2 rounded hover:bg-indigo-800 cursor-pointer"><i class="fa-solid fa-gear mr-1 text-xs"></i> Pengaturan</div>
+                  </div>
+                </div>
+
+                <!-- Trigger Modal Demo Button -->
+                <div class="flex flex-col gap-2">
+                  <label class="block text-[11px] font-semibold text-slate-600">Uji Dialog Pop-up (Modal Framework):</label>
+                  <button onclick="openSimModal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5 shadow-xs">
+                    <i class="fa-solid fa-square-arrow-up-right"></i> Buka Modal Dialog (data-bs-toggle="modal")
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center mt-2">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Cobalah klik tombol menu Navbar & Buka Modal.</span>
+              <button onclick="catatSimulasi(2)" id="btn-catat-2" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil UI
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi aktivitas praktikum penggunaan Grid System dan Komponen Framework CSS.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Utility Class / Attributes</th>
+                <th class="px-4 py-3">Konfigurasi Layout / Interaksi</th>
+                <th class="px-4 py-3">Hasil / Respon Antarmuka</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi: Framework CSS Modern (Bootstrap / Tailwind CSS)
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda terkait sistem grid 12 kolom, utility class, breakpoint responsif, dan komponen UI bawaan.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal PG</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan simulasi telah dikerjakan sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Interactive Component Preview (Simulasi 2) -->
+  <div id="demo-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="flex justify-between items-center border-b border-slate-200 pb-3 mb-3">
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-window-restore text-indigo-600"></i> Modal Header Framework
+        </h3>
+        <button onclick="closeSimModal()" class="text-slate-400 hover:text-slate-600 font-bold text-sm">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="text-xs text-slate-600 space-y-2 mb-4">
+        <p><strong>Modal Body:</strong> Ini adalah contoh pop-up dialog interaktif siap pakai bawaan Framework CSS (Bootstrap Modal / Tailwind Dialog).</p>
+        <p class="bg-indigo-50 p-2 rounded border border-indigo-200 text-indigo-800 font-mono text-[10px]">
+          Atribut: data-bs-dismiss="modal"
+        </p>
+      </div>
+      <div class="flex justify-end gap-2 border-t border-slate-100 pt-3">
+        <button onclick="closeSimModal()" class="px-3 py-1.5 bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-300 transition">
+          Batal
+        </button>
+        <button onclick="closeSimModal('sim-done')" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition">
+          Simpan Perubahan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-indigo-100 text-indigo-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-indigo-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // URL Web App Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // Log State Simulasi
+    let lastGridLog = { gridType: "3-cols", screen: "desktop", code: "", res: "" };
+    let lastCompLog = { action: "Navbar / Modal", detail: "Inisialisasi Komponen UI" };
+
+    // [DATA CSV SISWA]
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          selNama.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // --- LOGIKA SIMULASI 1: GRID SYSTEM DASHBOARD ---
+    function renderGridPreview() {
+      const gridType = document.getElementById('sim1-grid-type').value;
+      const screenView = document.getElementById('sim1-screen-view').value;
+      const container = document.getElementById('sim1-grid-container');
+      const codePreview = document.getElementById('sim1-code-preview');
+
+      container.innerHTML = '';
+      let codeText = '';
+      let resText = '';
+
+      if (screenView === 'mobile') {
+        // Layar Mobile (< md) menumpuk 1 kolom
+        container.className = "p-3 bg-slate-200/60 rounded-xl border border-slate-300 grid grid-cols-1 gap-2";
+        resText = "Mode Mobile: Tampilan menumpuk vertikal 1 Kolom (col-12)";
+      } else {
+        // Mode Desktop / Medium
+        if (gridType === '3-cols') {
+          container.className = "p-3 bg-slate-200/60 rounded-xl border border-slate-300 grid grid-cols-3 gap-2";
+          codeText = '&lt;div class="grid grid-cols-1 md:grid-cols-3 gap-3"&gt;';
+          resText = "3 Kolom Seimbang (col-md-4 / grid-cols-3)";
+        } else if (gridType === '2-cols') {
+          container.className = "p-3 bg-slate-200/60 rounded-xl border border-slate-300 grid grid-cols-2 gap-2";
+          codeText = '&lt;div class="grid grid-cols-1 md:grid-cols-2 gap-3"&gt;';
+          resText = "2 Kolom Lebar (col-md-6 / grid-cols-2)";
+        } else if (gridType === '4-cols') {
+          container.className = "p-3 bg-slate-200/60 rounded-xl border border-slate-300 grid grid-cols-4 gap-2";
+          codeText = '&lt;div class="grid grid-cols-1 md:grid-cols-4 gap-3"&gt;';
+          resText = "4 Kolom Ringkas (col-md-3 / grid-cols-4)";
+        } else if (gridType === 'asymmetric') {
+          container.className = "p-3 bg-slate-200/60 rounded-xl border border-slate-300 grid grid-cols-12 gap-2";
+          codeText = '&lt;div class="col-md-3"&gt;Sidebar&lt;/div&gt; &lt;div class="col-md-9"&gt;Main&lt;/div&gt;';
+          resText = "Asimetris: Sidebar (col-md-3) + Main Content (col-md-9)";
+        }
+      }
+
+      if (!codeText) codeText = '&lt;div class="grid grid-cols-1 gap-2"&gt; (Mobile Responsive Stack)';
+      codePreview.innerHTML = codeText;
+
+      // Render Cards inside Grid
+      if (gridType === 'asymmetric' && screenView === 'desktop') {
+        container.innerHTML = `
+          <div class="col-span-3 bg-indigo-600 text-white p-3 rounded-lg text-xs font-bold text-center flex flex-col justify-center items-center shadow-xs">
+            <i class="fa-solid fa-bars text-lg mb-1"></i> Sidebar (col-3)
+          </div>
+          <div class="col-span-9 bg-white border border-slate-300 p-3 rounded-lg text-xs font-bold text-slate-800 shadow-xs">
+            <i class="fa-solid fa-chart-pie text-indigo-600 mr-1"></i> Main Area Dashboard (col-9)
+            <div class="mt-2 text-[10px] text-slate-500 font-normal">Konten utama seperti grafik, tabel, dan statistik pengguna.</div>
+          </div>
+        `;
+      } else {
+        let itemsCount = gridType === '4-cols' ? 4 : (gridType === '2-cols' ? 2 : 3);
+        for(let i = 1; i <= itemsCount; i++) {
+          const card = document.createElement('div');
+          card.className = "bg-white p-3 border border-slate-300 rounded-lg shadow-2xs text-center flex flex-col items-center justify-center";
+          card.innerHTML = `
+            <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Widget ${i}</span>
+            <span class="text-xs font-bold text-slate-800 mt-0.5">Card Grid Item</span>
+          `;
+          container.appendChild(card);
+        }
+      }
+
+      lastGridLog.gridType = gridType;
+      lastGridLog.screen = screenView;
+      lastGridLog.code = codeText.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      lastGridLog.res = resText;
+    }
+
+    // --- LOGIKA SIMULASI 2: NAVBAR & MODAL ---
+    function toggleNavbarCollapse() {
+      const menu = document.getElementById('sim2-navbar-menu');
+      menu.classList.toggle('hidden');
+      const state = menu.classList.contains('hidden') ? "Tertutup" : "Terbuka (Collapse)";
+      lastCompLog = { action: "Navbar Toggle", detail: `Status Menu: ${state}` };
+      showToast("Navbar Toggled", `Navigasi responsif ${state}`, "info");
+    }
+
+    function openSimModal() {
+      document.getElementById('demo-modal').classList.remove('hidden');
+      lastCompLog = { action: "Modal Pop-up", detail: "Modal terbuka via data-bs-toggle='modal'" };
+      showToast("Modal Terbuka", "Dialog pop-up berhasil dipicu", "success");
+    }
+
+    function closeSimModal(actionType = "") {
+      document.getElementById('demo-modal').classList.add('hidden');
+      if (actionType === "sim-done") {
+        lastCompLog = { action: "Modal Action", detail: "Tombol Simpan diklik (data-bs-dismiss)" };
+        showToast("Modal Disimpan", "Aksi modal berhasil dieksekusi", "success");
+      }
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        logEntry = {
+          modul: "Simulasi 1: Grid System",
+          fitur: lastGridLog.code || "grid-cols-* / col-md-*",
+          input: `Konfigurasi: ${lastGridLog.gridType} (${lastGridLog.screen})`,
+          output: lastGridLog.res || "Tampilan grid menyesuaikan layout"
+        };
+      } else if (simNum === 2) {
+        logEntry = {
+          modul: "Simulasi 2: Komponent UI",
+          fitur: "data-bs-toggle / data-bs-target",
+          input: lastCompLog.action,
+          output: lastCompLog.detail
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil simulasi berhasil dimasukkan ke tabel pengamatan.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 text-[11px] font-mono text-slate-600 bg-slate-50 rounded">${row.fitur}</td>
+          <td class="px-4 py-3 text-slate-700 italic">${row.input}</td>
+          <td class="px-4 py-3 font-bold text-slate-900">${row.output}</td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Utility Class/Atribut,Input Layout,Hasil Output\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.fitur}","${d.input}","${d.output}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "LKPD11_FrameworkCSS_DataPengamatan.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil praktikum terunduh.", "success");
+    }
+
+    // QUESTION BANK LKPD 11 (20 SOAL - Framework CSS Modern)
+    const questionBankWeb = [
+      { id: 1, q: "Apa fungsi utama dari penggunaan Framework CSS seperti Bootstrap atau Tailwind CSS?", options: ["A. Mengelola database server web secara otomatis", "B. Mempercepat pembuatan antarmuka web yang responsif dan konsisten", "C. Menggantikan seluruh skrip logika pemrograman JavaScript", "D. Mengamankan file web dari serangan peretas", "E. Mengompresi file gambar menjadi format WebP"], ans: "B" },
+      { id: 2, q: "Pendekatan perancangan Tailwind CSS yang berfokus pada penerapan class-class utilitas kecil spesifik langsung pada elemen HTML disebut...", options: ["A. Component-First CSS", "B. Utility-First CSS", "C. Atomic JS Framework", "D. Inline HTML Styling", "E. Object-Oriented CSS (OOCSS)"], ans: "B" },
+      { id: 3, q: "Dalam sistem grid 12-kolom standar bawaan framework CSS, berapa jumlah total pembagian kolom horizontal dalam satu baris (row)?", options: ["A. 6 Kolom", "B. 8 Kolom", "C. 10 Kolom", "D. 12 Kolom", "E. 16 Kolom"], ans: "D" },
+      { id: 4, q: "Pada Bootstrap, class apakah yang digunakan untuk membagi halaman menjadi 3 kolom sama lebar pada layar ukuran medium (md)?", options: ["A. col-sm-3", "B. col-md-4", "C. col-lg-6", "D. col-xl-12", "E. col-md-3"], ans: "B" },
+      { id: 5, q: "Pada Tailwind CSS, penulisan class utilitas untuk membuat layout grid responsif 1 kolom di mobile dan 3 kolom di layar medium adalah...", options: ["A. grid grid-cols-1 md:grid-cols-3", "B. flex flex-row cols-3", "C. display-grid col-3-md", "D. layout-grid-1-3", "E. grid-responsive-3"], ans: "A" },
+      { id: 6, q: "Penanda ukuran layar / titik henti responsif (breakpoint) 'md' pada sebagian besar framework CSS umumnya menargetkan perangkat...", options: ["A. Smartphone layar sangat kecil", "B. Tablet / Layar berukuran sedang (~768px)", "C. Monitor Desktop Ultra-wide", "D. Televisi Resolusi 4K", "E. Jam tangan pintar (Smartwatch)"], ans: "B" },
+      { id: 7, q: "Atribut HTML (Data Attribute) yang digunakan pada Bootstrap untuk memicu pembukaan jendela dialog pop-up (Modal) adalah...", options: ["A. data-bs-toggle='modal'", "B. js-trigger='popup'", "C. onclick='openModal()'", "D. action='show-modal'", "E. class='modal-open'"], ans: "A" },
+      { id: 8, q: "Atribut 'data-bs-target' pada komponen interaktif Bootstrap berfungsi untuk...", options: ["A. Mengatur warna latar belakang modal", "B. Menentukan ID elemen target (misal: #myModal) yang akan dibuka", "C. Menghapus modal dari dokumen HTML", "D. Mengirim formulir data ke database", "E. Mengubah tingkat transparansi layar"], ans: "B" },
+      { id: 9, q: "Komponen UI siap pakai yang digunakan untuk menampilkan menu navigasi utama yang dapat diciutkan (collapse) pada layar mobile adalah...", options: ["A. Card", "B. Badge", "C. Navbar", "D. Carousel", "E. Breadcrumb"], ans: "C" },
+      { id: 10, q: "Komponen Bootstrap/Tailwind yang berfungsi menampilkan konten terstruktur berisi gambar, judul, teks, dan tombol dalam satu wadah kotak disebut...", options: ["A. Modal", "B. Card", "C. Alert", "D. Toast", "E. Dropdown"], ans: "B" },
+      { id: 11, q: "Class utilitas 'd-flex' (Bootstrap) atau 'flex' (Tailwind CSS) digunakan untuk mengubah tipe tampilan tata letak elemen menjadi...", options: ["A. Display Block", "B. Display Inline", "C. Flexible Box Layout (Flexbox)", "D. Table Layout", "E. Display None"], ans: "C" },
+      { id: 12, q: "Dalam class utilitas Tailwind CSS, penulisan class 'p-4' dan 'm-2' secara berurutan mengatur...", options: ["A. Position 4px dan Margin 2px", "B. Padding level 4 dan Margin level 2", "C. Pointer 4 dan Matrix 2", "D. Border 4px dan Padding 2px", "E. Font size 4 dan Height 2"], ans: "B" },
+      { id: 13, q: "Istilah 'Rapid Prototyping' dalam konteks pengembangan web dengan CSS Framework berarti...", options: ["A. Pengujian kecepatan jaringan server", "B. Pembuatan prototipe antarmuka web secara cepat menggunakan komponen & class siap pakai", "C. Pembuatan skrip database otomatis", "D. Proses mengompresi gambar web", "E. Mengubah skrip HTML menjadi file executable"], ans: "B" },
+      { id: 14, q: "Pada Bootstrap, class warna kontekstual untuk memberikan warna utama/biru (Primary) pada tombol adalah...", options: ["A. btn-success", "B. btn-danger", "C. btn-warning", "D. btn-primary", "E. btn-dark"], ans: "D" },
+      { id: 15, q: "Di Tailwind CSS, class yang digunakan untuk memosisikan teks rata tengah secara horizontal adalah...", options: ["A. align-center", "B. text-center", "C. content-center", "D. center-text", "E. justify-center-text"], ans: "B" },
+      { id: 16, q: "Komponen 'Modal' pada framework CSS biasanya memiliki struktur hirarki utama berupa...", options: ["A. Header, Body, dan Footer", "B. Row, Column, dan Span", "C. Top, Middle, dan Bottom", "D. Nav, Link, dan Brand", "E. Table, Tr, dan Td"], ans: "A" },
+      { id: 17, q: "Di bawah ini yang merupakan keunggulan utama menggunakan Framework CSS dibanding menulis CSS murni dari nol adalah...", options: ["A. Ukuran file CSS dipastikan selalu lebih kecil", "B. Tidak memerlukan browser untuk menjalankan web", "C. Menjamin konsistensi desain, efisiensi waktu, dan responsivitas lintas browser", "D. Menghilangkan kebutuhan akan struktur HTML", "E. Mengamankan kode web dari serangan hacker"], ans: "C" },
+      { id: 18, q: "Untuk membuat gambar otomatis menyesuaikan lebar kontainer pembungkusnya (responsif) di Bootstrap, class yang digunakan adalah...", options: ["A. img-fluid", "B. img-responsive", "C. img-fit", "D. img-auto", "E. img-full"], ans: "A" },
+      { id: 19, q: "Pada Tailwind CSS, sintaks modifier breakpoint seperti 'md:flex' berarti...", options: ["A. Flexbox hanya aktif pada layar smartphone kecil", "B. Flexbox diaktifkan ketika ukuran layar mencapai breakpoint 'md' (medium) ke atas", "C. Flexbox dimatikan pada layar medium", "D. Elemen disembunyikan pada layar medium", "E. Elemen digeser ke tengah pada layar medium"], ans: "B" },
+      { id: 20, q: "Penggunaan 'data-bs-dismiss=\"modal\"' pada tombol di dalam modal Bootstrap berfungsi untuk...", options: ["A. Membuka modal baru", "B. Menutup/menyembunyikan jendela modal saat tombol diklik", "C. Mengubah isi teks modal", "D. Menghapus modal secara permanen dari server", "E. Mengirim data modal via email"], ans: "B" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-indigo-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-indigo-600">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-indigo-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 11: Framework CSS Modern (Bootstrap / Tailwind CSS)",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai penggunaan sistem grid, utility class, dan interaktivitas komponen CSS Framework.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali mengenai atribut data bawaan komponen serta titik henti responsif.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi kembali materi Sistem Grid 12 Kolom dan Class Utilitas Framework.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-indigo-400";
+      if (type === "success") icon = "fa-circle-check text-emerald-400";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-400";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderGridPreview();
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>
