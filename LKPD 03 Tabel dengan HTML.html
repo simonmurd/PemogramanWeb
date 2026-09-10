@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 03: Tabel dengan HTML</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #0f172a;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    @keyframes pulse-network {
+      0%, 100% { background-color: rgba(59, 130, 246, 0.1); }
+      50% { background-color: rgba(59, 130, 246, 0.3); }
+    }
+    .network-row:hover { animation: none; background-color: rgba(255,255,255,0.1); }
+    .network-active { background-color: rgba(59, 130, 246, 0.2); border-left: 3px solid #3b82f6; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+          <i class="fa-solid fa-table text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Bab 3: Tabel dengan HTML</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Struktur tag tabel, atribut border, padding, serta colspan & rowspan.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Tabel HTML -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Struktur Tabel dengan HTML
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">Dasar Web</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          Tabel dalam HTML digunakan untuk menyusun data dalam bentuk baris dan kolom yang terstruktur (seperti jadwal pelajaran, data grid, matriks nilai, kuitansi). Struktur utama tabel didefinisikan menggunakan tag <b>&lt;table&gt;</b> beserta elemen anak di dalamnya.
+        </p>
+
+        <!-- Web Standards Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-code text-blue-600 mr-1.5"></i> Komponen Tag & Atribut Tabel HTML</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Komponen</th>
+                  <th class="p-2.5 border-b border-slate-200">Tag / Atribut</th>
+                  <th class="p-2.5 border-b border-slate-200">Fungsi Utama</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Struktur Dasar</td>
+                  <td class="p-2.5 font-mono text-blue-600">&lt;table&gt;, &lt;tr&gt;, &lt;th&gt;, &lt;td&gt;</td>
+                  <td class="p-2.5">Kerangka tabel utama, Tag pembentuk Baris (Row), Tag Header kolom, dan Tag Sel Data isi.</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Tag Semantik (Grup)</td>
+                  <td class="p-2.5 font-mono text-cyan-600">&lt;thead&gt;, &lt;tbody&gt;, &lt;tfoot&gt;</td>
+                  <td class="p-2.5">Mengelompokkan bagian atas (Header), bagian data utama (Body), dan bagian bawah/kesimpulan (Footer).</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Penggabungan Sel (Merge)</td>
+                  <td class="p-2.5 font-mono text-purple-600">colspan, rowspan</td>
+                  <td class="p-2.5"><i>Colspan</i> menggabungkan sel kolom (horizontal). <i>Rowspan</i> menggabungkan sel baris (vertikal).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+            <h4 class="font-bold text-blue-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-border-all text-blue-600"></i> border=""</h4>
+            <p class="text-blue-800">Menentukan ketebalan garis tepi tabel. Contoh: <code>&lt;table border="1"&gt;</code> untuk memunculkan garis pinggir pada tabel.</p>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <h4 class="font-bold text-amber-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-expand text-amber-600"></i> cellpadding=""</h4>
+            <p class="text-amber-800">Mengatur jarak (spasi) antara konten atau teks di dalam sel dengan garis pembatas (batas sel) itu sendiri.</p>
+          </div>
+          <div class="bg-rose-50 border border-rose-200 rounded-xl p-3">
+            <h4 class="font-bold text-rose-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-arrows-left-right text-rose-600"></i> cellspacing=""</h4>
+            <p class="text-rose-800">Mengatur jarak spasi kosong di antara satu sel dengan sel lainnya. Agar garis menyatu, gunakan nilai "0".</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif Tabel HTML
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Analisis struktur kode pembentuk jadwal pelajaran dan logika layout matriks invoice.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">Interactive Modules</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Data Grid Jadwal -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-calendar-days text-blue-600"></i> Simulasi 1: Data Grid Jadwal
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">Code Editor</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Klik bagian kode (baris) yang kosong pada snippet editor di bawah ini. Tentukan tag atau atribut tabel yang sesuai!</p>
+
+              <!-- Editor Interactive View -->
+              <div class="grid-bg-pattern rounded-xl p-0 relative min-h-[200px] mb-3 overflow-hidden font-mono-code text-[11px] shadow-inner">
+                <!-- Header Network -->
+                <div class="bg-slate-800 border-b border-slate-700 py-1.5 px-3 flex font-bold text-slate-400">
+                  <div class="w-full">jadwal_pelajaran.html</div>
+                </div>
+
+                <!-- Code Lines (Hotspots) -->
+                <div class="flex flex-col py-2">
+                  <button onclick="inspectHotspot(0)" id="hp-0" class="network-row w-full text-left flex py-1.5 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-full font-semibold"><span class="text-slate-500 mr-2">1</span><span class="text-blue-400" id="stat-0">&lt;!-- Lengkapi tag utama tabel --&gt;</span></div>
+                  </button>
+                  <button onclick="inspectHotspot(1)" id="hp-1" class="network-row w-full text-left flex py-1.5 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-full font-semibold pl-4"><span class="text-slate-500 mr-2">2</span><span class="text-cyan-400" id="stat-1">&lt;!-- Tag kelompok header --&gt;</span></div>
+                  </button>
+                  <button onclick="inspectHotspot(2)" id="hp-2" class="network-row w-full text-left flex py-1.5 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-full font-semibold pl-8"><span class="text-slate-500 mr-2">3</span><span class="text-emerald-400" id="stat-2">&lt;!-- Tag Baris Tabel --&gt;</span></div>
+                  </button>
+                  <button onclick="inspectHotspot(3)" id="hp-3" class="network-row w-full text-left flex py-1.5 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-full font-semibold pl-12"><span class="text-slate-500 mr-2">4</span><span class="text-rose-400" id="stat-3">&lt;!-- Tag Sel Judul --&gt;</span> Hari &lt;/...&gt;</div>
+                  </button>
+                  <div class="w-full text-left flex py-1 px-3 text-slate-400 font-semibold pl-8">
+                    <span class="text-slate-500 mr-2">5</span> &lt;/tr&gt;
+                  </div>
+                  <div class="w-full text-left flex py-1 px-3 text-slate-400 font-semibold pl-4">
+                    <span class="text-slate-500 mr-2">6</span> &lt;/thead&gt;
+                  </div>
+                  <div class="w-full text-left flex py-1 px-3 text-slate-400 font-semibold pl-4">
+                    <span class="text-slate-500 mr-2">7</span> &lt;tbody&gt;
+                  </div>
+                  <div class="w-full text-left flex py-1 px-3 text-slate-400 font-semibold pl-8">
+                    <span class="text-slate-500 mr-2">8</span> &lt;tr&gt;
+                  </div>
+                  <button onclick="inspectHotspot(4)" id="hp-4" class="network-row w-full text-left flex py-1.5 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-full font-semibold pl-12"><span class="text-slate-500 mr-2">9</span><span class="text-purple-400" id="stat-4">&lt;!-- Tag Sel Data --&gt;</span> Senin &lt;/...&gt;</div>
+                  </button>
+                  <div class="w-full text-left flex py-1 px-3 text-slate-400 font-semibold pl-8">
+                    <span class="text-slate-500 mr-2">10</span> &lt;/tr&gt;
+                  </div>
+                  <div class="w-full text-left flex py-1 px-3 text-slate-400 font-semibold pl-4">
+                    <span class="text-slate-500 mr-2">11</span> &lt;/tbody&gt;
+                  </div>
+                  <div class="w-full text-left flex py-1 px-3 text-slate-400 font-semibold">
+                    <span class="text-slate-500 mr-2">12</span>&lt;/table&gt;
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inspector Detail Panel -->
+              <div id="sim1-detail-box" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2 mb-2 hidden">
+                <!-- JS Dynamic Content -->
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Klik baris kode untuk menginspeksi.</span>
+              <button onclick="catatSimulasi(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Analisis
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Complex Layout Transaksi -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-file-invoice-dollar text-blue-600"></i> Simulasi 2: Invoice Matriks
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">Layout Colspan & Rowspan</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Tentukan tag dan atribut penyatuan sel yang tepat untuk membuat desain tabel kuitansi / invoice secara berurutan!</p>
+
+              <!-- Decision Step Indicator Bar -->
+              <div class="flex items-center justify-between bg-slate-100 p-2 rounded-xl mb-3 text-[11px] font-bold text-slate-600">
+                <span id="step-lbl-1" class="px-1.5 py-1 bg-blue-600 text-white rounded-lg">1. Area Isi</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-2" class="px-1.5 py-1 rounded-lg">2. Gabung Kolom</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-3" class="px-1.5 py-1 rounded-lg">3. Gabung Baris</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-4" class="px-1.5 py-1 rounded-lg">4. Footer</span>
+              </div>
+
+              <!-- Decision Card Box -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs mb-3">
+                <span class="text-[10px] font-bold text-blue-600 uppercase block mb-1" id="sim2-step-title">Langkah 1: Menyusun Area Isi</span>
+                <p id="sim2-narrative" class="font-medium text-slate-900 leading-relaxed mb-3">
+                  Setelah bagian header invoice (thead) dibuat, Anda ingin mengelompokkan area yang berisi daftar barang belanjaan pengguna. Tag apa yang digunakan?
+                </p>
+
+                <div class="space-y-2" id="sim2-options-container">
+                  <!-- Dynamic JS Options -->
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Selesaikan 4 tahapan layouting.</span>
+              <button onclick="catatSimulasi(2)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Simulasi
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum Tabel HTML
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi analisis kode jadwal dan logika layout struktur matriks.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Objek / Tahapan</th>
+                <th class="px-4 py-3">Analisis / Input Tag</th>
+                <th class="px-4 py-3">Status Pemahaman</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Klik tombol "+ Catat Analisis/Simulasi" pada modul di atas untuk menyimpan hasil.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Tabel HTML -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi Tabel HTML
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut mengenai pembuatan tabel web.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal Pilihan Ganda</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-blue-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Tabel HTML Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // Keep Original School Data CSV Exact
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.getElementById('sel-nama');
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          opt.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // SIMULASI 1: ANALISIS KODE TABEL (PENGGANTI NETWORK TAB)
+    const hotspotsData = [
+      {
+        id: 0,
+        title: "Atribut Kerangka Tabel",
+        desc: "Anda ingin membuat tabel dengan garis tepi ukuran 1, jarak isi teks dengan batas sel sebesar 5, dan jarak antar sel 0.",
+        target: "Tag <table> memiliki atribut border, cellpadding, dan cellspacing yang tepat.",
+        signsOptions: [
+          'A. <table border="1" cellpadding="5" cellspacing="0">',
+          'B. <table line="1" padding="5" spacing="0">',
+          'C. <table border="1" margin="5" padding="0">'
+        ],
+        correctSign: 'A. <table border="1" cellpadding="5" cellspacing="0">',
+        code: "TABLE-ATTR"
+      },
+      {
+        id: 1,
+        title: "Tag Pengelompokan Header",
+        desc: "Bagian atas tabel yang berisi judul kolom (seperti nama-nama hari untuk jadwal) perlu dikelompokkan secara semantik.",
+        target: "Pengelompokan struktur header tabel menggunakan tag...",
+        signsOptions: [
+          'A. <header>',
+          'B. <thead>',
+          'C. <th>'
+        ],
+        correctSign: 'B. <thead>',
+        code: "THEAD"
+      },
+      {
+        id: 2,
+        title: "Tag Baris (Row)",
+        desc: "Setelah membuat pengelompokan (misal thead), Anda harus mendefinisikan sebuah baris tabel sebelum memasukkan data/judul.",
+        target: "Membuat satu baris mendatar (horizontal) di dalam tabel.",
+        signsOptions: [
+          'A. <row>',
+          'B. <td>',
+          'C. <tr>'
+        ],
+        correctSign: 'C. <tr>',
+        code: "TR"
+      },
+      {
+        id: 3,
+        title: "Tag Sel Judul (Header Cell)",
+        desc: "Sel ini berisi teks yang terletak di baris judul (misal kata 'Hari'). Teks harus otomatis tebal (bold) dan ditengah (center).",
+        target: "Sel khusus untuk judul/header kolom tabel.",
+        signsOptions: [
+          'A. <td>',
+          'B. <th>',
+          'C. <head>'
+        ],
+        correctSign: 'B. <th>',
+        code: "TH"
+      },
+      {
+        id: 4,
+        title: "Tag Sel Data Biasa (Data Cell)",
+        desc: "Pada baris isi (tbody), Anda memasukkan data jadwal (misal 'Senin') ke dalam sebuah sel tabel biasa.",
+        target: "Membuat sel data/isi standar.",
+        signsOptions: [
+          'A. <data>',
+          'B. <tr>',
+          'C. <td>'
+        ],
+        correctSign: 'C. <td>',
+        code: "TD"
+      }
+    ];
+
+    let currentInspectIdx = 0;
+    let userSignSelections = {};
+
+    function inspectHotspot(idx) {
+      currentInspectIdx = idx;
+      const hp = hotspotsData[idx];
+      
+      // Styling active row
+      for(let i=0; i<5; i++){
+          document.getElementById('hp-'+i).classList.remove('network-active');
+      }
+      document.getElementById('hp-'+idx).classList.add('network-active');
+
+      const box = document.getElementById('sim1-detail-box');
+      box.classList.remove('hidden');
+
+      let optionsHtml = '';
+      hp.signsOptions.forEach(opt => {
+        const isChecked = userSignSelections[idx] === opt ? 'checked' : '';
+        optionsHtml += `
+          <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition">
+            <input type="radio" name="hp_sign_${idx}" value='${opt.replace(/'/g, "&apos;")}' ${isChecked} onchange="selectSignForHp(${idx}, '${opt.replace(/'/g, "\\'")}')" class="accent-blue-600">
+            <span class="font-mono text-[11px]">${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
+          </label>
+        `;
+      });
+
+      box.innerHTML = `
+        <div class="border-b border-slate-200 pb-1.5 font-bold text-slate-900 flex justify-between items-center">
+          <span>${hp.title}</span>
+          <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Analisis Kode</span>
+        </div>
+        <p class="text-slate-700 mt-1"><b>Kondisi:</b> ${hp.desc}</p>
+        <p class="text-slate-700"><b>Target:</b> <span class="text-blue-600 font-bold">${hp.target}</span></p>
+        <div class="pt-1">
+          <p class="font-bold text-slate-800 mb-1">Pilih Tag/Atribut yang Tepat:</p>
+          <div class="space-y-1.5">${optionsHtml}</div>
+        </div>
+      `;
+
+      document.getElementById('sim1-status-text').innerText = `Menganalisa baris kode ke-${idx+1}.`;
+    }
+
+    function selectSignForHp(hpIdx, signVal) {
+      userSignSelections[hpIdx] = signVal;
+      showToast("Pilihan Disimpan", `Anda memilih opsi: ${signVal.substring(0, 10)}...`, "info");
+      
+      // Update UI Code snippet
+      let extractedTag = signVal.substring(3).trim(); // Menghapus "A. " atau "B. "
+      let statusEl = document.getElementById(`stat-${hpIdx}`);
+      statusEl.innerText = extractedTag;
+      statusEl.className = "text-white font-bold";
+    }
+
+    // SIMULASI 2: MATRIKS INVOICE (COLSPAN/ROWSPAN)
+    let currentTechStep = 1;
+    let techChoices = {};
+
+    const techStackStepsData = {
+      1: {
+        title: "Langkah 1: Menyusun Area Isi Transaksi",
+        narrative: "Setelah bagian header (<thead>) invoice selesai dibuat, Anda ingin mengelompokkan baris demi baris yang memuat daftar barang belanjaan pengguna. Tag khusus tabel manakah yang digunakan untuk mengelompokkan baris isi/utama?",
+        options: [
+          { label: "A. Menggunakan tag &lt;tbody&gt;", correct: true, feedback: "TEPAT! <tbody> digunakan untuk mengelompokkan baris data isi/utama pada tabel." },
+          { label: "B. Menggunakan tag &lt;tfoot&gt;", correct: false, feedback: "TIDAK TEPAT. <tfoot> untuk catatan kaki atau barisan total, bukan isi barang." },
+          { label: "C. Menggunakan tag &lt;table&gt;", correct: false, feedback: "SALAH. <table> adalah tag pembungkus paling luar, bukan untuk bagian isi (body)." }
+        ]
+      },
+      2: {
+        title: "Langkah 2: Menggabungkan Sel Secara Horizontal",
+        narrative: "Di baris paling bawah, Anda ingin membuat teks 'TOTAL HARGA'. Namun, Anda butuh teks tersebut memakan jarak panjang dengan cara menggabungkan 3 kolom (Kolom No, Nama Barang, dan Qty) menjadi 1 sel besar agar tabel tetap rapi. Atribut apa yang digunakan?",
+        options: [
+          { label: "A. Menggunakan atribut rowspan='3'", correct: false, feedback: "SALAH. Rowspan digunakan untuk menggabungkan baris ke arah bawah (vertikal)." },
+          { label: "B. Menggunakan atribut colspan='3'", correct: true, feedback: "TEPAT! Colspan digunakan untuk menggabungkan beberapa kolom menjadi satu (horizontal menyamping)." },
+          { label: "C. Menggunakan atribut merge='3'", correct: false, feedback: "SALAH. HTML tidak memiliki atribut merge untuk elemen tabel." }
+        ]
+      },
+      3: {
+        title: "Langkah 3: Menggabungkan Sel Secara Vertikal",
+        narrative: "Pada invoice, terdapat sebuah sel bertuliskan 'Diskon Promo' yang berlaku untuk 2 buah baris transaksi sekaligus. Anda perlu menggabungkan 2 buah baris ke arah bawah agar sel tersebut lebih tinggi. Atribut apa yang digunakan?",
+        options: [
+          { label: "A. Menggunakan atribut colspan='2'", correct: false, feedback: "SALAH. Colspan hanya untuk gabung kolom menyamping." },
+          { label: "B. Menggunakan atribut rowspan='2'", correct: true, feedback: "TEPAT! Rowspan digunakan untuk menggabungkan sel baris ke bawah secara vertikal." },
+          { label: "C. Menggunakan tag &lt;br&gt;", correct: false, feedback: "SALAH. Tag <br> hanya digunakan untuk memberi enter/ganti baris pada teks, bukan untuk menggabungkan struktur sel." }
+        ]
+      },
+      4: {
+        title: "Langkah 4: Baris Penutup (Footer)",
+        narrative: "Invoice matriks Anda sudah hampir selesai. Bagian akhir yang memuat 'Total Tagihan' atau kesimpulan dari tabel, sebaiknya dikelompokkan ke dalam tag semantik khusus penutup tabel agar struktur dokumen rapi. Tag apa itu?",
+        options: [
+          { label: "A. &lt;bottom&gt;", correct: false, feedback: "SALAH. Tidak ada tag khusus bernama <bottom> dalam standar tabel HTML." },
+          { label: "B. &lt;tbody&gt;", correct: false, feedback: "KURANG TEPAT. <tbody> digunakan untuk isi utama, bukan baris kesimpulan akhir." },
+          { label: "C. &lt;tfoot&gt;", correct: true, feedback: "SANGAT TEPAT! <tfoot> (Table Footer) berfungsi untuk mengelompokkan baris kaki/kesimpulan tabel." }
+        ]
+      }
+    };
+
+    function renderTechStep(step) {
+      currentTechStep = step;
+      const data = techStackStepsData[step];
+
+      document.getElementById('sim2-step-title').innerText = data.title;
+      document.getElementById('sim2-narrative').innerHTML = data.narrative;
+
+      for (let i = 1; i <= 4; i++) {
+        const lbl = document.getElementById(`step-lbl-${i}`);
+        if (i === step) lbl.className = "px-1.5 py-1 bg-blue-600 text-white rounded-lg";
+        else if (i < step) lbl.className = "px-1.5 py-1 bg-emerald-600 text-white rounded-lg";
+        else lbl.className = "px-1.5 py-1 bg-slate-200 text-slate-600 rounded-lg";
+      }
+
+      const container = document.getElementById('sim2-options-container');
+      container.innerHTML = '';
+
+      data.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 font-medium text-slate-800 transition text-xs shadow-2xs";
+        btn.innerHTML = opt.label;
+        btn.onclick = () => chooseTechOption(step, idx, opt.correct, opt.feedback);
+        container.appendChild(btn);
+      });
+    }
+
+    function chooseTechOption(step, optIdx, isCorrect, feedbackText) {
+      techChoices[step] = { optIdx, isCorrect, feedbackText };
+
+      if (isCorrect) {
+        showToast("Keputusan Tepat!", feedbackText, "success");
+        if (step < 4) {
+          renderTechStep(step + 1);
+        } else {
+          document.getElementById('sim2-status-text').innerText = "Konfigurasi Matriks Selesai dengan SUKSES!";
+        }
+      } else {
+        showToast("Kurang Tepat!", feedbackText, "warning");
+      }
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        const hp = hotspotsData[currentInspectIdx];
+        const selectedSign = userSignSelections[currentInspectIdx];
+
+        if (!selectedSign) {
+          showToast("Pilih Opsi", "Harap pilih opsi jawaban kode (Tag/Atribut) terlebih dahulu!", "warning");
+          return;
+        }
+
+        const isCorrect = selectedSign === hp.correctSign;
+
+        logEntry = {
+          modul: "Sim 1: Struktur Tabel Jadwal",
+          param: `${hp.title}`,
+          hasil: `Input: ${hp.code}`,
+          status: isCorrect ? "PASS (Pemahaman Sesuai)" : "RISK (Error Logika Tag)"
+        };
+      } else if (simNum === 2) {
+        const step1Pass = techChoices[1] && techChoices[1].isCorrect;
+        const step2Pass = techChoices[2] && techChoices[2].isCorrect;
+        const step3Pass = techChoices[3] && techChoices[3].isCorrect;
+        const step4Pass = techChoices[4] && techChoices[4].isCorrect;
+
+        const allPass = step1Pass && step2Pass && step3Pass && step4Pass;
+
+        logEntry = {
+          modul: "Sim 2: Matriks Invoice",
+          param: "Penggabungan Sel (Colspan/Rowspan)",
+          hasil: `Layer 1-4 Evaluated`,
+          status: allPass ? "PASS (Struktur Rapi)" : "RISK (Layout Berantakan)"
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil praktikum tabel berhasil dimasukkan ke form observasi.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Klik tombol "+ Catat Analisis" pada modul simulasi di atas untuk menyimpan hasil.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-emerald-100 text-emerald-800 border border-emerald-200";
+        if (row.status.includes("RISK")) badgeColor = "bg-rose-100 text-rose-800 border border-rose-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 font-mono-code text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-slate-900">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Objek/Tahapan,Input Analisis,Status Pemahaman\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${d.hasil}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "WebTabel_LKPD03_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil analisis tabel terunduh.", "success");
+    }
+
+    // QUESTION BANK TABEL HTML (20 SOAL)
+    const questionBankWeb = [
+      { id: 1, q: "Tag utama yang digunakan untuk membungkus atau mengawali pembuatan tabel pada HTML adalah...", options: ["A. <tr>", "B. <table>", "C. <td>", "D. <row>", "E. <tab>"], ans: "B" },
+      { id: 2, q: "Tag yang berfungsi untuk membuat atau mendefinisikan sebuah baris (Table Row) pada tabel adalah...", options: ["A. <tr>", "B. <th>", "C. <br>", "D. <hr>", "E. <td>"], ans: "A" },
+      { id: 3, q: "Untuk memasukkan data (teks biasa) ke dalam sel di dalam sebuah baris tabel, tag yang digunakan adalah...", options: ["A. <data>", "B. <text>", "C. <td>", "D. <col>", "E. <row>"], ans: "C" },
+      { id: 4, q: "Jika kita ingin membuat teks pada sel tabel otomatis menjadi tebal (bold) dan berada tepat di tengah untuk keperluan judul kolom (header), maka tag yang digunakan adalah...", options: ["A. <td>", "B. <th>", "C. <b>", "D. <tr>", "E. <thead>"], ans: "B" },
+      { id: 5, q: "Atribut HTML yang tepat untuk menggabungkan 2 kolom menjadi satu kesatuan menyamping (horizontal) adalah...", options: ["A. rowspan='2'", "B. span='2'", "C. colspan='2'", "D. merge='2'", "E. merge-col='2'"], ans: "C" },
+      { id: 6, q: "Atribut HTML yang digunakan jika ingin menggabungkan 3 baris ke arah bawah (vertikal) pada tabel adalah...", options: ["A. colspan='3'", "B. rowspan='3'", "C. down='3'", "D. cell-merge='3'", "E. vertical='3'"], ans: "B" },
+      { id: 7, q: "Jarak spasi antara teks di dalam sebuah sel dengan garis tepi/batas sel itu sendiri dinamakan...", options: ["A. cellspacing", "B. cellpadding", "C. border", "D. width", "E. height"], ans: "B" },
+      { id: 8, q: "Sedangkan jarak kerenggangan spasi antara satu sel dengan sel lainnya dinamakan...", options: ["A. cellspacing", "B. cellpadding", "C. border", "D. margin", "E. padding"], ans: "A" },
+      { id: 9, q: "Untuk memunculkan garis tepi di sekeliling tabel dan antar selnya, atribut apa yang harus ditambahkan pada tag <table>?", options: ["A. line='1'", "B. outline='1'", "C. stroke='1'", "D. border='1'", "E. hr='1'"], ans: "D" },
+      { id: 10, q: "Tag semantik (pengelompokan) yang disarankan oleh standar HTML untuk bagian atas (header) tabel adalah...", options: ["A. <top>", "B. <thead>", "C. <head>", "D. <header>", "E. <title>"], ans: "B" },
+      { id: 11, q: "Tag semantik pengelompokan yang digunakan khusus untuk menaungi barisan data utama (isi tabel) adalah...", options: ["A. <tbody>", "B. <main>", "C. <content>", "D. <data>", "E. <tfoot>"], ans: "A" },
+      { id: 12, q: "Bagian baris akhir pada sebuah tabel (seperti baris rekapitulasi atau total harga) sebaiknya dikelompokkan ke dalam tag...", options: ["A. <bottom>", "B. <end>", "C. <tfoot>", "D. <footer-table>", "E. <summary>"], ans: "C" },
+      { id: 13, q: "Apa fungsi utama dari tag <caption> dalam sebuah struktur tabel HTML?", options: ["A. Menggabungkan kolom.", "B. Memberikan judul/keterangan tulisan persis di atas atau di bawah tabel.", "C. Mewarnai tabel.", "D. Menghapus border tabel.", "E. Menyembunyikan tabel."], ans: "B" },
+      { id: 14, q: "Tag <tr> merupakan kependekan dari istilah...", options: ["A. Table Row", "B. Table Record", "C. Table Range", "D. Table Read", "E. Text Row"], ans: "A" },
+      { id: 15, q: "Tag <td> merupakan kependekan dari istilah...", options: ["A. Table Description", "B. Text Description", "C. Table Data", "D. Table Document", "E. Text Data"], ans: "C" },
+      { id: 16, q: "Perhatikan potongan kode ini: Terdapat satu baris dengan sel <td>1</td>, lalu <td colspan='2'>2</td>, dan <td>3</td>. Berapa jumlah kapasitas kolom visual keseluruhan pada baris tersebut?", options: ["A. 2 Kolom", "B. 3 Kolom", "C. 4 Kolom", "D. 5 Kolom", "E. 6 Kolom"], ans: "C" },
+      { id: 17, q: "Aturan struktur hirarki tabel yang BENAR adalah penempatan tag <tr> harus berada di dalam tag...", options: ["A. Hanya di dalam <p>", "B. Di dalam <table>, <thead>, <tbody>, atau <tfoot>", "C. Di dalam <td> saja", "D. Di dalam <br>", "E. Bebas diletakkan di mana saja di <body>"], ans: "B" },
+      { id: 18, q: "Apa yang terjadi apabila nilai atribut pada tabel dituliskan border='0' ?", options: ["A. Tabel akan memiliki garis setebal 0 pixel (tidak ada garis pinggir/tembus pandang).", "B. Tabel akan error.", "C. Tabel otomatis berwarna hitam.", "D. Semua baris akan menjadi tebal.", "E. Tabel tidak akan bisa ditampilkan di browser."], ans: "A" },
+      { id: 19, q: "Jika kita ingin membuat tabel membentang penuh (100%) mengikuti lebar ukuran layar browser, atribut apa yang paling tepat ditambahkan?", options: ["A. height='100%'", "B. size='full'", "C. zoom='100%'", "D. width='100%'", "E. length='max'"], ans: "D" },
+      { id: 20, q: "Dalam pembuatan tabel yang baik, tag <th> pada umumnya ditempatkan bersarang (nested) di bagian dalam tag...", options: ["A. <td>", "B. <tr>", "C. <body>", "D. <caption>", "E. <head> dokumen"], ans: "B" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-blue-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-blue-600">
+              <span class="font-mono">${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Tampilkan indikator loading pada tombol
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 03: Tabel dengan HTML",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai konsep penyusunan struktur Tabel HTML beserta artibut selnya.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali materi tag thead, tbody, colspan, dan rowspan.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi kembali materi logika dasar pembuatan tabel di HTML.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-blue-500";
+      if (type === "success") icon = "fa-circle-check text-emerald-500";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-500";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderTechStep(1);
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>

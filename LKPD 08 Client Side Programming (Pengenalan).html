@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 08: Client Side Programming (Pengenalan)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #0f172a;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    @keyframes pulse-network {
+      0%, 100% { background-color: rgba(59, 130, 246, 0.1); }
+      50% { background-color: rgba(59, 130, 246, 0.3); }
+    }
+    .network-row:hover { animation: none; background-color: rgba(255,255,255,0.1); }
+    .network-active { background-color: rgba(59, 130, 246, 0.2); border-left: 3px solid #3b82f6; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+          <i class="fa-brands fa-js text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 08: Client Side Programming</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Memahami & Mempresentasikan Client Side Scripting vs Server Side Scripting</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Ekosistem Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Client-Side vs Server-Side Scripting
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">Dasar Pemrograman Web</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          Dalam ekosistem pengembangan web modern, logika pemrograman dibagi menjadi dua wilayah utama: <b>Client-Side</b> (berjalan di sisi pengguna/browser) dan <b>Server-Side</b> (berjalan di sisi server pusat). Pembagian ini penting untuk mengoptimalkan kecepatan, keamanan, dan pengalaman pengguna (seperti <i>zero page refresh</i>).
+        </p>
+
+        <!-- Web Standards Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-code-compare text-blue-600 mr-1.5"></i> Perbandingan Eksekusi Scripting</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Aspek</th>
+                  <th class="p-2.5 border-b border-slate-200">Client-Side Scripting</th>
+                  <th class="p-2.5 border-b border-slate-200">Server-Side Scripting</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Tempat Eksekusi</td>
+                  <td class="p-2.5">Web Browser pengguna (Chrome, Firefox, dll).</td>
+                  <td class="p-2.5">Mesin Web Server (Apache, Nginx, Node.js).</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Bahasa Populer</td>
+                  <td class="p-2.5 font-mono">JavaScript (JS), TypeScript, HTML, CSS</td>
+                  <td class="p-2.5 font-mono">PHP, Python, Ruby, Java, C#, Node.js</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Fokus Utama</td>
+                  <td class="p-2.5">Interaktivitas UI, validasi form instan, animasi, manipulasi DOM (Dokumen).</td>
+                  <td class="p-2.5">Keamanan data, autentikasi login, query database, pemrosesan bisnis logika berat.</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Visibilitas Kode</td>
+                  <td class="p-2.5 text-amber-600 font-medium">Bisa dilihat oleh user (Inspect Element).</td>
+                  <td class="p-2.5 text-emerald-600 font-medium">Tersembunyi dari user, aman dari akses publik.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+            <h4 class="font-bold text-blue-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-bolt text-blue-600"></i> Zero Page Refresh (Client-Side)</h4>
+            <p class="text-blue-800">JavaScript memungkinkan web memperbarui tampilan tanpa memuat ulang seluruh halaman (reload). Contoh: Menekan "Like" di Instagram, validasi input salah, atau memuat pesan baru.</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-300 rounded-xl p-3">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-slate-700"></i> Autentikasi Data (Server-Side)</h4>
+            <p class="text-slate-800">Validasi yang bersifat krusial dan rahasia (seperti mencocokkan password atau memproses saldo bank) <b>wajib</b> dilakukan di server, karena kode Client-Side bisa dimanipulasi pengguna.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Praktekkan eksekusi JavaScript (Console) dan analisis studi kasus alur validasi formulir.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">Interactive Modules</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Console Live Debugging -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-terminal text-blue-600"></i> Simulasi 1: Console Live Debugging
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">DevTools (Console)</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Klik setiap baris perintah JavaScript di bawah ini seolah-olah Anda menjalankannya di Console Browser. Tentukan di mana eksekusi ini terjadi!</p>
+
+              <!-- Console Tab Interactive View -->
+              <div class="bg-slate-900 rounded-xl p-0 relative min-h-[200px] mb-3 overflow-hidden font-mono-code text-[11px] shadow-inner border border-slate-700">
+                <!-- Header Console -->
+                <div class="bg-slate-800 border-b border-slate-700 py-1.5 px-3 flex font-bold text-slate-400">
+                  <div class="w-2/3">Command Input (JS)</div>
+                  <div class="w-1/3 text-right">Execution Scope</div>
+                </div>
+
+                <!-- Console Requests (Hotspots) -->
+                <div class="flex flex-col">
+                  <button onclick="inspectHotspot(0)" id="hp-0" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent hover:bg-slate-800">
+                    <div class="w-2/3 font-semibold text-emerald-400"><span class="text-slate-500 mr-2">></span>console.log("Halo Web!");</div>
+                    <div class="w-1/3 text-right font-bold text-slate-500" id="stat-0">???</div>
+                  </button>
+                  <button onclick="inspectHotspot(1)" id="hp-1" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent hover:bg-slate-800">
+                    <div class="w-2/3 font-semibold text-emerald-400"><span class="text-slate-500 mr-2">></span>document.getElementById("btn").style.color = "red";</div>
+                    <div class="w-1/3 text-right font-bold text-slate-500" id="stat-1">???</div>
+                  </button>
+                  <button onclick="inspectHotspot(2)" id="hp-2" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent hover:bg-slate-800">
+                    <div class="w-2/3 font-semibold text-emerald-400"><span class="text-slate-500 mr-2">></span>alert("Password terlalu pendek!");</div>
+                    <div class="w-1/3 text-right font-bold text-slate-500" id="stat-2">???</div>
+                  </button>
+                  <button onclick="inspectHotspot(3)" id="hp-3" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent hover:bg-slate-800">
+                    <div class="w-2/3 font-semibold text-blue-400"><span class="text-slate-500 mr-2">></span>SELECT * FROM users WHERE email='x';</div>
+                    <div class="w-1/3 text-right font-bold text-slate-500" id="stat-3">???</div>
+                  </button>
+                  <button onclick="inspectHotspot(4)" id="hp-4" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent hover:bg-slate-800">
+                    <div class="w-2/3 font-semibold text-emerald-400"><span class="text-slate-500 mr-2">></span>let x = 10; let y = 20; x + y;</div>
+                    <div class="w-1/3 text-right font-bold text-slate-500" id="stat-4">???</div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Inspector Detail Panel -->
+              <div id="sim1-detail-box" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2 mb-2 hidden">
+                <!-- JS Dynamic Content -->
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Klik baris kode pada Console untuk menganalisa.</span>
+              <button onclick="catatSimulasi(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Analisis
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Architecture Comparison Roleplay -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-users-viewfinder text-blue-600"></i> Simulasi 2: Architecture Roleplay
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">Validasi Pendaftaran</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Skenario: Anda merancang alur halaman Pendaftaran (Register). Tentukan kapan validasi dilakukan di Browser (Client) dan kapan di Backend (Server).</p>
+
+              <!-- Decision Step Indicator Bar -->
+              <div class="flex items-center justify-between bg-slate-100 p-2 rounded-xl mb-3 text-[11px] font-bold text-slate-600">
+                <span id="step-lbl-1" class="px-1.5 py-1 bg-blue-600 text-white rounded-lg">1. Cek "@"</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-2" class="px-1.5 py-1 rounded-lg">2. Cek Karakter</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-3" class="px-1.5 py-1 rounded-lg">3. Ketersediaan</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-4" class="px-1.5 py-1 rounded-lg">4. Enkripsi DB</span>
+              </div>
+
+              <!-- Decision Card Box -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs mb-3">
+                <span class="text-[10px] font-bold text-blue-600 uppercase block mb-1" id="sim2-step-title">Tahap 1: Validasi Karakter Email</span>
+                <p id="sim2-narrative" class="font-medium text-slate-900 leading-relaxed mb-3">
+                  User memasukkan email `user#gmail.com` (tanpa @). Anda ingin memunculkan notifikasi merah seketika sebelum user menekan tombol submit. Validasi dilakukan oleh?
+                </p>
+
+                <div class="space-y-2" id="sim2-options-container">
+                  <!-- Dynamic JS Options -->
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Selesaikan 4 tahapan alur validasi.</span>
+              <button onclick="catatSimulasi(2)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Keputusan
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi log analisis simulasi eksekusi Client vs Server.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Objek / Skenario</th>
+                <th class="px-4 py-3">Keputusan Arsitektur</th>
+                <th class="px-4 py-3">Status Pemahaman</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Klik tombol "+ Catat Analisis" atau "+ Catat Keputusan" pada modul simulasi di atas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi: Client & Server Scripting
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut mengenai peran scripting pada ekosistem web.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal PG</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-blue-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // URL Web App Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // [DATA CSV SISWA TETAP DARI FILE ORIGINAL]
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.getElementById('sel-nama');
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          opt.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // SIMULASI 1: CONSOLE LIVE DEBUGGING
+    const consoleTasksData = [
+      {
+        id: 0,
+        title: "Perintah: console.log(...)",
+        desc: "Script ini akan mencetak teks di dalam tab Console secara instan saat dieksekusi.",
+        target: "Teks muncul tanpa merefresh halaman sama sekali.",
+        signsOptions: [
+          "A. Dieksekusi di Server (Server-Side)",
+          "B. Dieksekusi di Browser (Client-Side)",
+          "C. Dieksekusi di Database"
+        ],
+        correctSign: "B. Dieksekusi di Browser (Client-Side)",
+        code: "Client-Side"
+      },
+      {
+        id: 1,
+        title: "Perintah: DOM Manipulation",
+        desc: "Mengambil elemen ber-ID 'btn' dan langsung mengubah warna teksnya menjadi merah.",
+        target: "Tampilan website berubah langsung tanpa loading.",
+        signsOptions: [
+          "A. Dieksekusi di Server (Server-Side)",
+          "B. Dieksekusi di Browser (Client-Side)",
+          "C. Membutuhkan API Eksternal"
+        ],
+        correctSign: "B. Dieksekusi di Browser (Client-Side)",
+        code: "Client-Side"
+      },
+      {
+        id: 2,
+        title: "Perintah: alert(...)",
+        desc: "Memanggil fungsi pop-up bawaan browser untuk menampilkan pesan peringatan ke pengguna.",
+        target: "Kotak dialog (pop-up) muncul di layar.",
+        signsOptions: [
+          "A. Fitur OS (Sistem Operasi)",
+          "B. Fitur Database Backend",
+          "C. Fitur Browser (Client-Side)"
+        ],
+        correctSign: "C. Fitur Browser (Client-Side)",
+        code: "Client-Side"
+      },
+      {
+        id: 3,
+        title: "Perintah: Query Database (SQL)",
+        desc: "Perintah untuk membaca data tabel 'users' secara langsung.",
+        target: "Mengambil seluruh data pengguna yang tersimpan di sistem.",
+        signsOptions: [
+          "A. BISA dieksekusi di Browser (Client)",
+          "B. TIDAK BISA di Browser. Wajib di Server (Backend).",
+          "C. Eksekusi lewat HTML"
+        ],
+        correctSign: "B. TIDAK BISA di Browser. Wajib di Server (Backend).",
+        code: "Server-Side"
+      },
+      {
+        id: 4,
+        title: "Perintah: Kalkulasi Matematika",
+        desc: "Mendeklarasikan variabel dan melakukan penjumlahan instan di memori.",
+        target: "Menghasilkan angka 30 langsung di terminal.",
+        signsOptions: [
+          "A. Dieksekusi di Server (Server-Side)",
+          "B. Dieksekusi di Browser (Client-Side)",
+          "C. Wajib dikirim via HTTP Request"
+        ],
+        correctSign: "B. Dieksekusi di Browser (Client-Side)",
+        code: "Client-Side"
+      }
+    ];
+
+    let currentInspectIdx = 0;
+    let userSignSelections = {};
+
+    function inspectHotspot(idx) {
+      currentInspectIdx = idx;
+      const hp = consoleTasksData[idx];
+      
+      for(let i=0; i<5; i++){
+          document.getElementById('hp-'+i).classList.remove('network-active');
+      }
+      document.getElementById('hp-'+idx).classList.add('network-active');
+
+      const box = document.getElementById('sim1-detail-box');
+      box.classList.remove('hidden');
+
+      let optionsHtml = '';
+      hp.signsOptions.forEach(opt => {
+        const isChecked = userSignSelections[idx] === opt ? 'checked' : '';
+        optionsHtml += `
+          <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition">
+            <input type="radio" name="hp_sign_${idx}" value="${opt}" ${isChecked} onchange="selectSignForHp(${idx}, '${opt}')" class="accent-blue-600">
+            <span>${opt}</span>
+          </label>
+        `;
+      });
+
+      box.innerHTML = `
+        <div class="border-b border-slate-200 pb-1.5 font-bold text-slate-900 flex justify-between items-center">
+          <span>${hp.title}</span>
+          <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Analisis Script</span>
+        </div>
+        <p class="text-slate-700"><b>Kondisi:</b> ${hp.desc}</p>
+        <p class="text-slate-700"><b>Target Hasil:</b> <span class="text-blue-600 font-bold">${hp.target}</span></p>
+        <div class="pt-1">
+          <p class="font-bold text-slate-800 mb-1">Tentukan wilayah eksekusi perintah di atas:</p>
+          <div class="space-y-1.5">${optionsHtml}</div>
+        </div>
+      `;
+
+      document.getElementById('sim1-status-text').innerText = `Menganalisa baris perintah ke-${idx+1}.`;
+    }
+
+    function selectSignForHp(hpIdx, signVal) {
+      userSignSelections[hpIdx] = signVal;
+      const hp = consoleTasksData[hpIdx];
+      
+      showToast("Terkonfirmasi", `Perintah #${hpIdx+1} ditetapkan.`, "info");
+      
+      let statusEl = document.getElementById(`stat-${hpIdx}`);
+      
+      if(signVal === hp.correctSign) {
+         statusEl.innerText = hp.code;
+         statusEl.className = "w-1/3 text-right font-bold text-emerald-400";
+      } else {
+         statusEl.innerText = "SALAH";
+         statusEl.className = "w-1/3 text-right font-bold text-rose-400";
+      }
+    }
+
+    // SIMULASI 2: VALIDATION ARCHITECTURE
+    let currentTechStep = 1;
+    let techChoices = {};
+
+    const validationStepsData = {
+      1: {
+        title: "Tahap 1: Cek Tanda '@' pada Input Email",
+        narrative: "User sedang mengetik alamat email di form (misal: 'budi#gmail.com'). Sebelum tombol Submit ditekan, Anda ingin mengecek apakah ada simbol '@'. Di manakah pengecekan ini sebaiknya dilakukan agar cepat dan instan?",
+        options: [
+          { label: "A. Client-Side (Browser - JavaScript/HTML5)", correct: true, feedback: "TEPAT! Mengecek karakter text sangat cepat dilakukan di browser tanpa membebani server." },
+          { label: "B. Server-Side (Backend - PHP/Node.js)", correct: false, feedback: "KURANG TEPAT. Anda membuang waktu & bandwidth jika harus mengirim data ke server hanya untuk mengecek tanda @." }
+        ]
+      },
+      2: {
+        title: "Tahap 2: Pengecekan Panjang Password",
+        narrative: "Form mensyaratkan password minimal 8 karakter. Begitu user mengetik 4 huruf, muncul pesan merah 'Password terlalu pendek'. Pengecekan real-time (saat mengetik) ini dikerjakan oleh?",
+        options: [
+          { label: "A. Web Server (Apache/Nginx)", correct: false, feedback: "SALAH. Web server bertugas melayani request internet, bukan membaca ketikan keyboard user secara live." },
+          { label: "B. Client-Side Scripting (JavaScript)", correct: true, feedback: "BENAR! JS dapat mendeteksi event 'onkeyup' pada keyboard dan memvalidasi langsung di layar user (zero refresh)." }
+        ]
+      },
+      3: {
+        title: "Tahap 3: Cek Ketersediaan Username",
+        narrative: "User memilih username 'pro_gamer'. Sistem harus mengecek apakah username tersebut SUDAH dipakai oleh orang lain di masa lalu. Di manakah pengecekan ini harus dilakukan?",
+        options: [
+          { label: "A. Di Browser Client (JavaScript murni)", correct: false, feedback: "SALAH FATAL. Browser user tidak menyimpan seluruh data pengguna pendaftar lainnya. Browser tidak punya akses ke database pusat." },
+          { label: "B. Di Server-Side (PHP + Database SQL)", correct: true, feedback: "TEPAT SEKALI! JavaScript di client akan me-request ke Server (AJAX). Server lah yang mengecek ke dalam Database SQL." }
+        ]
+      },
+      4: {
+        title: "Tahap 4: Simpan dan Enkripsi Password",
+        narrative: "Semua form sudah valid. User klik 'Daftar'. Password asli 'rahasia123' harus dienkripsi (Hash) dan disimpan permanen. Siapa yang bertanggung jawab untuk eksekusi keamanan ini?",
+        options: [
+          { label: "A. Server-Side Scripting (Backend)", correct: true, feedback: "SANGAT TEPAT! Enkripsi dan penyimpanan ke dalam database adalah tugas mutlak dari lingkungan backend yang aman." },
+          { label: "B. HTML dan CSS di Browser", correct: false, feedback: "SALAH BESAR. HTML/CSS tidak bisa mengenkripsi logika berat dan tidak bisa menyimpan data persisten ke server." }
+        ]
+      }
+    };
+
+    function renderTechStep(step) {
+      currentTechStep = step;
+      const data = validationStepsData[step];
+
+      document.getElementById('sim2-step-title').innerText = data.title;
+      document.getElementById('sim2-narrative').innerText = data.narrative;
+
+      for (let i = 1; i <= 4; i++) {
+        const lbl = document.getElementById(`step-lbl-${i}`);
+        if (i === step) lbl.className = "px-1.5 py-1 bg-blue-600 text-white rounded-lg";
+        else if (i < step) lbl.className = "px-1.5 py-1 bg-emerald-600 text-white rounded-lg";
+        else lbl.className = "px-1.5 py-1 bg-slate-200 text-slate-600 rounded-lg";
+      }
+
+      const container = document.getElementById('sim2-options-container');
+      container.innerHTML = '';
+
+      data.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 font-medium text-slate-800 transition text-xs shadow-2xs";
+        btn.innerHTML = opt.label;
+        btn.onclick = () => chooseTechOption(step, idx, opt.correct, opt.feedback);
+        container.appendChild(btn);
+      });
+    }
+
+    function chooseTechOption(step, optIdx, isCorrect, feedbackText) {
+      techChoices[step] = { optIdx, isCorrect, feedbackText };
+
+      if (isCorrect) {
+        showToast("Keputusan Tepat!", feedbackText, "success");
+        if (step < 4) {
+          renderTechStep(step + 1);
+        } else {
+          document.getElementById('sim2-status-text').innerText = "Alur Arsitektur Validasi Selesai!";
+        }
+      } else {
+        showToast("Kurang Tepat!", feedbackText, "warning");
+      }
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        const hp = consoleTasksData[currentInspectIdx];
+        const selectedSign = userSignSelections[currentInspectIdx];
+
+        if (!selectedSign) {
+          showToast("Pilih Eksekusi", "Harap pilih wilayah eksekusi (Client/Server) terlebih dahulu!", "warning");
+          return;
+        }
+
+        const isCorrect = selectedSign === hp.correctSign;
+
+        logEntry = {
+          modul: "Simulasi 1: Console JS",
+          param: `${hp.title}`,
+          hasil: isCorrect ? hp.code : "Salah Identifikasi",
+          status: isCorrect ? "PASS (Pemahaman Tepat)" : "RISK (Error Konsep)"
+        };
+      } else if (simNum === 2) {
+        const step1Pass = techChoices[1] && techChoices[1].isCorrect;
+        const step2Pass = techChoices[2] && techChoices[2].isCorrect;
+        const step3Pass = techChoices[3] && techChoices[3].isCorrect;
+        const step4Pass = techChoices[4] && techChoices[4].isCorrect;
+
+        const allPass = step1Pass && step2Pass && step3Pass && step4Pass;
+
+        logEntry = {
+          modul: "Simulasi 2: Validasi Web",
+          param: "Desain Arsitektur Cek Data",
+          hasil: `Client/Server Role Defined`,
+          status: allPass ? "PASS (Arsitektur Tepat)" : "RISK (Beban Server Tinggi / Tidak Aman)"
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil analisis simulasi berhasil dimasukkan ke tabel.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Klik tombol "+ Catat Analisis" atau "+ Catat Keputusan" pada modul simulasi di atas.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-emerald-100 text-emerald-800 border border-emerald-200";
+        if (row.status.includes("RISK")) badgeColor = "bg-rose-100 text-rose-800 border border-rose-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 font-mono-code text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-slate-900">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Objek/Skenario,Keputusan Arsitektur,Status Pemahaman\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${d.hasil}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "WebTech_LKPD08_ClientServer_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil analisis terunduh.", "success");
+    }
+
+    // QUESTION BANK LKPD 08 (20 SOAL)
+    const questionBankWeb = [
+      { id: 1, q: "Apa yang dimaksud dengan Client-Side Scripting?", options: ["A. Script yang dieksekusi oleh Database", "B. Script yang berjalan di dalam Web Browser pengguna", "C. Script yang berjalan pada sistem operasi server", "D. Script untuk mengonfigurasi jaringan router", "E. Script yang hanya bisa jalan di command prompt"], ans: "B" },
+      { id: 2, q: "Bahasa pemrograman utama yang digunakan secara de facto untuk Client-Side Scripting di web adalah...", options: ["A. PHP", "B. Python", "C. JavaScript", "D. C++", "E. Java"], ans: "C" },
+      { id: 3, q: "Keuntungan utama menggunakan Client-Side Scripting dalam validasi form (seperti cek format email) adalah...", options: ["A. Meningkatkan keamanan dari serangan hacker", "B. Memberikan respon instan tanpa memuat ulang (refresh) halaman", "C. Mempercepat query ke dalam database SQL", "D. Membuat ukuran file HTML lebih kecil", "E. Mengamankan password"], ans: "B" },
+      { id: 4, q: "Di manakah Server-Side Scripting dieksekusi?", options: ["A. Di aplikasi Chrome atau Firefox pengguna", "B. Di komputer/perangkat (smartphone) milik pengguna", "C. Di komputer Server yang bertugas melayani web", "D. Di dalam file CSS", "E. Di dalam RAM laptop klien"], ans: "C" },
+      { id: 5, q: "Berikut ini adalah contoh bahasa pemrograman Server-Side yang populer, KECUALI...", options: ["A. PHP", "B. Node.js", "C. Python", "D. HTML", "E. Ruby"], ans: "D" },
+      { id: 6, q: "Apa yang terjadi pada kode PHP setelah dieksekusi di server dan dikirim ke browser?", options: ["A. Kode PHP akan terlihat di fitur 'Inspect Element'", "B. Kode PHP berubah menjadi file gambar", "C. Kode PHP diproses dan hasil akhirnya (biasanya HTML murni) dikirim ke browser klien", "D. Browser klien akan menjalankan ulang kode PHP tersebut", "E. Browser menolak kode PHP"], ans: "C" },
+      { id: 7, q: "Untuk memanipulasi DOM (Document Object Model) dan membuat elemen web interaktif (animasi, popup) tanpa reload halaman, teknologi yang digunakan adalah...", options: ["A. JavaScript", "B. MySQL", "C. Apache", "D. PHP", "E. Nginx"], ans: "A" },
+      { id: 8, q: "Anda ingin membuat fitur 'Check Username Availability' saat registrasi. Karena username tersimpan di database, maka teknologi yang bekerja di balik layar adalah...", options: ["A. Hanya Client-Side murni", "B. Server-Side Scripting (untuk query ke DB)", "C. CSS Grid", "D. HTML Semantic", "E. XML"], ans: "B" },
+      { id: 9, q: "Apakah pengguna (user) bisa melihat source code (kode sumber) dari Client-Side JavaScript?", options: ["A. Tidak bisa, selalu terenkripsi otomatis", "B. Bisa, melalui fitur View Page Source / Inspect Element pada browser", "C. Hanya bisa dilihat oleh admin jaringan", "D. Hanya jika user mengunduh servernya", "E. Tergantung sistem operasi"], ans: "B" },
+      { id: 10, q: "Apakah pengguna (user) bisa melihat source code asli (contoh: query database) dari Server-Side Script (seperti PHP)?", options: ["A. Bisa, dengan menekan F12 (Inspect Element)", "B. Bisa, dengan menyimpan halaman (Ctrl+S)", "C. Tidak bisa, karena diproses di sisi server dan hanya output-nya yang dikirim ke klien", "D. Bisa, dengan menggunakan software khusus", "E. Bisa, jika menggunakan Chrome"], ans: "C" },
+      { id: 11, q: "Teknologi yang memungkinkan JavaScript di sisi klien untuk mengambil data dari server secara *asynchronous* (di latar belakang) tanpa memuat ulang (refresh) halaman disebut...", options: ["A. DNS", "B. AJAX / Fetch API", "C. FTP", "D. SMTP", "E. SSH"], ans: "B" },
+      { id: 12, q: "Dalam arsitektur web modern, apa fungsi utama dari Web Browser terkait Client-Side scripting?", options: ["A. Sebagai compiler database", "B. Sebagai penampung data permanen", "C. Sebagai interpreter (penerjemah) dan mesin eksekusi kode JavaScript, HTML, dan CSS", "D. Sebagai penghubung router", "E. Sebagai pembuat sertifikat SSL"], ans: "C" },
+      { id: 13, q: "Jika sebuah website ingin menghitung 10 + 20 dan menampilkannya, di manakah perhitungan itu BISA dilakukan?", options: ["A. Hanya di Client-Side", "B. Hanya di Server-Side", "C. Bisa di Client-Side (JS) maupun Server-Side (PHP/Node)", "D. Hanya di Database", "E. Tidak bisa di web"], ans: "C" },
+      { id: 14, q: "Jika perhitungan adalah 'Memeriksa apakah PIN ATM pengguna cocok dengan yang terdaftar di bank', di manakah perhitungan ini WAJIB dilakukan demi keamanan?", options: ["A. Client-Side", "B. Server-Side", "C. Front-End", "D. Browser Cache", "E. Local Storage"], ans: "B" },
+      { id: 15, q: "Tab 'Console' pada Developer Tools di Google Chrome utamanya digunakan untuk...", options: ["A. Mengedit file PHP di server", "B. Melakukan testing, debugging, dan menjalankan script JavaScript secara live di browser", "C. Merubah kecepatan internet", "D. Membaca tabel database MySQL", "E. Menonaktifkan sistem operasi"], ans: "B" },
+      { id: 16, q: "Perintah JS `console.log('Error Validasi');` akan menampilkan teks tersebut di mana?", options: ["A. Di tengah-tengah layar website", "B. Di database server", "C. Di tab Console Developer Tools milik browser", "D. Di file konfigurasi Apache", "E. Di pop up alert layar user"], ans: "C" },
+      { id: 17, q: "Server-side scripting sangat krusial untuk aspek berikut ini, kecuali...", options: ["A. Otentikasi dan Login User", "B. Pemrosesan Data Pembayaran (Payment Gateway)", "C. Efek kursor animasi bintang-bintang di browser", "D. Operasi Create, Read, Update, Delete (CRUD) ke Database", "E. Menyembunyikan Secret API Keys"], ans: "C" },
+      { id: 18, q: "Fungsi `alert('Halo Dunia');` pada JavaScript merupakan contoh dari script yang berjalan di wilayah...", options: ["A. Server", "B. Client (Browser)", "C. Router ISP", "D. Database Relasional", "E. Proxy Server"], ans: "B" },
+      { id: 19, q: "Mengapa mendelegasikan pengecekan 'panjang karakter password harus lebih dari 8' ke sisi Client (Browser) dianggap praktik yang baik?", options: ["A. Karena lebih aman dari hacker", "B. Karena menghemat beban kerja (resource) Server dan respon ke user jauh lebih instan", "C. Karena HTML wajib melakukannya", "D. Karena server tidak mengerti angka", "E. Supaya database lebih ringan menyimpannya"], ans: "B" },
+      { id: 20, q: "Manakah pernyataan yang PALING TEPAT mengenai hubungan Client dan Server scripting?", options: ["A. Keduanya saling bermusuhan dan tidak bisa digunakan bersama", "B. Client-side menggantikan Server-side sepenuhnya", "C. Keduanya bekerja sama: Server menangani data/keamanan, Client menangani presentasi/interaksi", "D. Server-side bergantung pada browser, Client-side bergantung pada database", "E. Hanya diperlukan satu saja untuk membuat web dinamis modern"], ans: "C" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-blue-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-blue-600">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 08: Client vs Server Scripting",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai konsep Client-Side dan Server-Side Scripting dengan sempurna.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali perbedaan ranah eksekusi antara Browser dan Server.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi kembali materi arsitektur scripting dan DOM.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-blue-500";
+      if (type === "success") icon = "fa-circle-check text-emerald-500";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-500";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderTechStep(1);
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>

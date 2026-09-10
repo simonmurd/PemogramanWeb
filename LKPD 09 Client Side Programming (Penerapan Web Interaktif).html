@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 09: Client Side Programming (Penerapan Web Interaktif)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .dark-mode-sim {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      border-color: #334155 !important;
+    }
+    .dark-mode-sim input {
+      background-color: #0f172a !important;
+      color: #fff !important;
+      border-color: #475569 !important;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+          <i class="fa-brands fa-square-js text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 09: Penerapan Web Interaktif</h1>
+          <p class="text-xs text-slate-500 mt-0.5">JavaScript: Variabel, Operator, Function, dan Event Handler</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori JavaScript -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Dasar Pemrograman JavaScript
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">Bab 9: Web Interaktif</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          JavaScript (JS) adalah bahasa pemrograman yang membuat website menjadi hidup dan interaktif. Dengan JS, halaman web tidak lagi statis, melainkan dapat merespon klik (Event Handler), melakukan perhitungan matematika otomatis (Operator), hingga mengubah tampilan seketika (DOM Manipulation).
+        </p>
+
+        <!-- Teori Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-box text-blue-600"></i> Variabel & Tipe Data</h4>
+            <p class="text-slate-600 mb-2">Variabel digunakan untuk menyimpan data. Dalam JS modern kita menggunakan <code class="font-bold">let</code> (bisa diubah) atau <code class="font-bold">const</code> (tetap).</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              let harga = 10000; // Tipe: Number<br>
+              let nama = "Budi"; // Tipe: String
+            </div>
+          </div>
+          
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-calculator text-blue-600"></i> Operator Matematika</h4>
+            <p class="text-slate-600 mb-2">Digunakan untuk kalkulasi: <code class="font-bold">+</code> (tambah), <code class="font-bold">-</code> (kurang), <code class="font-bold">*</code> (kali), <code class="font-bold">/</code> (bagi).</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              let diskon = 20 / 100;<br>
+              let total = harga - (harga * diskon);
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-code-branch text-blue-600"></i> Percabangan (If/Switch)</h4>
+            <p class="text-slate-600 mb-2">Membuat keputusan logika berdasarkan kondisi tertentu.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              if (nama == "") {<br>
+              &nbsp;&nbsp;alert("Nama tidak boleh kosong!");<br>
+              }
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-bolt text-blue-600"></i> Event Handler & Fungsi</h4>
+            <p class="text-slate-600 mb-2">Fungsi (kumpulan kode) yang dipicu saat terjadi interaksi (Event) seperti tombol diklik (<code class="font-bold">onclick</code>).</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              function sapa() { alert("Halo!"); }<br>
+              &lt;button onclick="sapa()"&gt;Klik&lt;/button&gt;
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Praktikum penerapan variabel, kalkulasi matematis, dan event handling pada antarmuka web.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">2 Skenario</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Kalkulator Diskon / Kasir Sederhana -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-calculator text-blue-600"></i> Simulasi 1: Kalkulasi Otomatis
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">Aritmatika JS</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Simulasikan program kasir. Masukkan harga dan diskon, lalu klik tombol untuk mengeksekusi operasi aritmatika melalui fungsi JavaScript.</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-3">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">Harga Barang (Rp)</label>
+                  <input type="number" id="input-harga" class="w-full p-2 border border-slate-300 rounded-lg text-xs" placeholder="Contoh: 100000">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">Diskon (%)</label>
+                  <input type="number" id="input-diskon" class="w-full p-2 border border-slate-300 rounded-lg text-xs" placeholder="Contoh: 20">
+                </div>
+                <button onclick="jalankanKalkulasi()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                  <i class="fa-solid fa-play mr-1"></i> Hitung (onclick event)
+                </button>
+                <div id="hasil-kalkulasi" class="p-3 bg-white border border-slate-200 rounded-lg text-center font-bold text-slate-800 text-sm shadow-inner">
+                  Total Bayar: Rp 0
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mt-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Silakan tes fitur kalkulator di atas.</span>
+              <button onclick="catatSimulasi(1)" id="btn-catat-1" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs opacity-50 cursor-not-allowed" disabled>
+                <i class="fa-solid fa-plus"></i> Catat Hasil
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Event Handling & Form Validation -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-toggle-on text-blue-600"></i> Simulasi 2: Event Handling UI
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">DOM & If/Else</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Uji coba memanipulasi DOM (Dark Mode) dan menguji logika percabangan IF untuk memvalidasi masukan formulir sebelum dikirim.</p>
+
+              <!-- UI Interactive Area -->
+              <div id="sim2-container" class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-4 transition-colors duration-500">
+                <div class="flex justify-between items-center border-b border-slate-200/50 pb-2">
+                  <span class="text-[11px] font-semibold text-slate-600" id="lbl-tema">Tema Tampilan</span>
+                  <button onclick="toggleDarkMode()" class="px-3 py-1.5 bg-slate-800 text-white rounded-full text-[10px] font-bold hover:bg-slate-700">
+                    <i class="fa-solid fa-moon mr-1"></i> Mode
+                  </button>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1" id="lbl-nama">Nama Pendaftar</label>
+                  <input type="text" id="input-nama-validasi" class="w-full p-2 border border-slate-300 rounded-lg text-xs" placeholder="Kosongkan kolom ini untuk mengetes IF..">
+                </div>
+
+                <button onclick="jalankanValidasi()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                  <i class="fa-solid fa-check mr-1"></i> Validasi Form (onclick)
+                </button>
+                
+                <div id="msg-validasi" class="hidden p-2 rounded-lg text-[10px] font-bold text-center border">
+                  <!-- JS will inject message here -->
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center mt-2">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Silakan klik Dark Mode dan Coba Validasi form kosong.</span>
+              <button onclick="catatSimulasi(2)" id="btn-catat-2" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs opacity-50 cursor-not-allowed" disabled>
+                <i class="fa-solid fa-plus"></i> Catat Hasil
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi aktivitas simulasi penerapan JavaScript interaktif.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Fitur/Peristiwa JS</th>
+                <th class="px-4 py-3">Input Data User</th>
+                <th class="px-4 py-3">Hasil / Output Layar</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi: Web Interaktif
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda terkait variabel, operator, percabangan, fungsi, dan event handler.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal PG</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan simulasi telah dikerjakan sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-blue-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // URL Web App Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // Data Status Simulasi
+    let sim1Done = false;
+    let sim2Done = false;
+    let lastHitungLog = { input: "", output: "" };
+    let lastValidasiLog = { input: "", output: "" };
+
+    // [DATA CSV SISWA]
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`; // Truncated for display, assuming full DB loaded as before
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.getElementById('sel-nama');
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          opt.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // --- LOGIKA SIMULASI 1: KALKULATOR DISKON ---
+    function formatRupiah(angka) {
+      return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function jalankanKalkulasi() {
+      let harga = document.getElementById('input-harga').value;
+      let diskon = document.getElementById('input-diskon').value;
+
+      if(harga === "" || diskon === "") {
+        showToast("Error", "Harap masukkan Harga dan Diskon", "warning");
+        return;
+      }
+
+      harga = parseFloat(harga);
+      diskon = parseFloat(diskon);
+
+      let potongan = harga * (diskon / 100);
+      let totalBayar = harga - potongan;
+
+      document.getElementById('hasil-kalkulasi').innerText = `Total Bayar: ${formatRupiah(totalBayar)}`;
+      
+      // Buka tombol catat
+      sim1Done = true;
+      let btn = document.getElementById('btn-catat-1');
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+      lastHitungLog.input = `Harga: ${harga}, Diskon: ${diskon}%`;
+      lastHitungLog.output = formatRupiah(totalBayar);
+
+      showToast("Berhasil", "Kalkulasi matematika dieksekusi JS.", "success");
+    }
+
+    // --- LOGIKA SIMULASI 2: EVENT & VALIDASI ---
+    function toggleDarkMode() {
+      const container = document.getElementById('sim2-container');
+      const lblTema = document.getElementById('lbl-tema');
+      const lblNama = document.getElementById('lbl-nama');
+
+      container.classList.toggle('dark-mode-sim');
+      
+      if(container.classList.contains('dark-mode-sim')) {
+        lblTema.classList.replace('text-slate-600', 'text-slate-300');
+        lblNama.classList.replace('text-slate-600', 'text-slate-300');
+        showToast("Dark Mode Aktif", "DOM JS mengubah CSS class", "info");
+      } else {
+        lblTema.classList.replace('text-slate-300', 'text-slate-600');
+        lblNama.classList.replace('text-slate-300', 'text-slate-600');
+        showToast("Light Mode Aktif", "DOM JS mengembalikan CSS asal", "info");
+      }
+
+      enableCatatBtn2();
+    }
+
+    function jalankanValidasi() {
+      let nama = document.getElementById('input-nama-validasi').value;
+      let msgBox = document.getElementById('msg-validasi');
+      
+      msgBox.classList.remove('hidden', 'bg-rose-100', 'text-rose-700', 'border-rose-300', 'bg-emerald-100', 'text-emerald-700', 'border-emerald-300');
+
+      if(nama.trim() === "") {
+        // Percabangan (If - true)
+        msgBox.innerHTML = "<i class='fa-solid fa-triangle-exclamation'></i> Validasi Gagal: Nama tidak boleh kosong!";
+        msgBox.classList.add('bg-rose-100', 'text-rose-700', 'border-rose-300');
+        lastValidasiLog.output = "Gagal (Kosong)";
+        showToast("Peringatan", "Blok IF tereksekusi", "warning");
+      } else {
+        // Percabangan (Else)
+        msgBox.innerHTML = `<i class='fa-solid fa-check'></i> Validasi Sukses: Halo, ${nama}!`;
+        msgBox.classList.add('bg-emerald-100', 'text-emerald-700', 'border-emerald-300');
+        lastValidasiLog.output = "Sukses Valid";
+        showToast("Sukses", "Blok ELSE tereksekusi", "success");
+      }
+
+      lastValidasiLog.input = nama === "" ? "[Data Kosong]" : nama;
+      enableCatatBtn2();
+    }
+
+    function enableCatatBtn2() {
+      sim2Done = true;
+      let btn = document.getElementById('btn-catat-2');
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        logEntry = {
+          modul: "Simulasi 1: Kalkulator",
+          fitur: "Variabel, Operator Aritmatika",
+          input: lastHitungLog.input,
+          output: lastHitungLog.output
+        };
+      } else if (simNum === 2) {
+        logEntry = {
+          modul: "Simulasi 2: Event Form",
+          fitur: "Event onclick, DOM, IF/Else",
+          input: lastValidasiLog.input || "[Toggle Dark Mode]",
+          output: lastValidasiLog.output || "Tampilan Berubah"
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil simulasi berhasil dimasukkan ke tabel.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 text-[11px] font-mono text-slate-600 bg-slate-50 rounded">${row.fitur}</td>
+          <td class="px-4 py-3 text-slate-700 italic">${row.input}</td>
+          <td class="px-4 py-3 font-bold text-slate-900">${row.output}</td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Fitur JS,Input Data,Hasil Output\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.fitur}","${d.input}","${d.output}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "WebTech_LKPD09_JSInteraktif_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil praktikum terunduh.", "success");
+    }
+
+    // QUESTION BANK LKPD 09 (20 SOAL - JavaScript)
+    const questionBankWeb = [
+      { id: 1, q: "Apa kegunaan utama dari JavaScript pada sebuah website?", options: ["A. Membuat kerangka halaman web", "B. Memberikan warna dan tata letak", "C. Membuat halaman web menjadi interaktif", "D. Menyimpan database secara permanen", "E. Membuat jaringan LAN lokal"], ans: "C" },
+      { id: 2, q: "Dalam JavaScript modern, kata kunci apa yang sebaiknya digunakan untuk membuat variabel yang nilainya bisa diubah?", options: ["A. const", "B. let", "C. dim", "D. int", "E. string"], ans: "B" },
+      { id: 3, q: "Kata kunci apa yang digunakan untuk mendeklarasikan variabel yang nilainya tetap (tidak boleh diubah)?", options: ["A. let", "B. var", "C. constant", "D. static", "E. const"], ans: "E" },
+      { id: 4, q: "Apa fungsi dari operator '+' dalam JavaScript jika digunakan pada dua variabel angka (misal: 10 + 5)?", options: ["A. Penggabungan teks (Concatenation)", "B. Penjumlahan aritmatika", "C. Perkalian", "D. Pembandingan", "E. Percabangan"], ans: "B" },
+      { id: 5, q: "Apa fungsi dari operator '+' jika digunakan pada teks/string (misal: 'Halo' + 'Budi')?", options: ["A. Menjumlahkan huruf", "B. Menyisipkan spasi otomatis", "C. Menggabungkan dua teks tersebut (Concatenation)", "D. Menghasilkan error", "E. Mengubah huruf menjadi kapital"], ans: "C" },
+      { id: 6, q: "Di antara operator berikut, manakah yang merupakan operator perkalian di JavaScript?", options: ["A. x", "B. &", "C. *", "D. #", "E. %"], ans: "C" },
+      { id: 7, q: "Struktur percabangan yang digunakan untuk mengeksekusi blok kode HANYA JIKA kondisinya bernilai benar (true) adalah...", options: ["A. for", "B. array", "C. if", "D. let", "E. function"], ans: "C" },
+      { id: 8, q: "Bila kita ingin mengeksekusi sebuah kode jika kondisi BENAR, dan kode lainnya jika SALAH, kita menggunakan struktur...", options: ["A. if ... else", "B. let ... const", "C. while ... do", "D. switch ... array", "E. try ... catch"], ans: "A" },
+      { id: 9, q: "Untuk mengecek apakah variabel 'A' memiliki nilai yang SAMA PERSIS dengan 'B', operator pembanding yang digunakan adalah...", options: ["A. =", "B. ==", "C. >", "D. <", "E. !="], ans: "B" },
+      { id: 10, q: "Event handler pada JavaScript yang aktif ketika pengguna mengklik (mouse) sebuah tombol adalah...", options: ["A. onchange", "B. onmouseover", "C. onclick", "D. onkeyup", "E. onload"], ans: "C" },
+      { id: 11, q: "Event handler 'onchange' biasanya sering dimanfaatkan pada elemen apa di HTML?", options: ["A. <div>", "B. <p> (Paragraf)", "C. <input> atau <select> (Formulir)", "D. <img> (Gambar)", "E. <h1>"], ans: "C" },
+      { id: 12, q: "Cara penulisan yang benar untuk membuat fungsi dalam JavaScript adalah...", options: ["A. function = namaFungsi() {}", "B. function namaFungsi() {}", "C. create function namaFungsi() {}", "D. def namaFungsi() {}", "E. function: namaFungsi()"], ans: "B" },
+      { id: 13, q: "Perintah document.getElementById('demo') berfungsi untuk...", options: ["A. Mencari elemen HTML yang memiliki nama tag 'demo'", "B. Membuat elemen ID baru pada CSS", "C. Menghapus elemen pada database", "D. Mengambil/memilih elemen HTML yang atribut ID-nya adalah 'demo'", "E. Mengubah gaya font"], ans: "D" },
+      { id: 14, q: "Properti dalam JavaScript yang paling sering dipakai untuk menyisipkan teks atau HTML baru ke dalam sebuah elemen adalah...", options: ["A. innerHTML", "B. src", "C. href", "D. className", "E. style"], ans: "A" },
+      { id: 15, q: "Fungsi bawaan JavaScript untuk menampilkan pesan pop-up (kotak dialog kecil di atas layar) kepada pengguna adalah...", options: ["A. print()", "B. echo()", "C. alert()", "D. console.log()", "E. popup()"], ans: "C" },
+      { id: 16, q: "Perintah `console.log('Halo')` akan menampilkan teks 'Halo' pada...", options: ["A. Bagian paling bawah website", "B. Pop-up di layar pengguna", "C. Tab Console pada menu Developer Tools di browser", "D. Database server pusat", "E. Di dalam kotak form login"], ans: "C" },
+      { id: 17, q: "Operator logika yang melambangkan kondisi AND (Dan) di JavaScript adalah...", options: ["A. ||", "B. &&", "C. !=", "D. ===", "E. ++"], ans: "B" },
+      { id: 18, q: "Operator logika yang melambangkan kondisi OR (Atau) di JavaScript adalah...", options: ["A. ||", "B. &&", "C. !=", "D. ===", "E. --"], ans: "A" },
+      { id: 19, q: "Tipe data yang hanya menyimpan dua kemungkinan nilai yaitu 'true' (benar) atau 'false' (salah) disebut...", options: ["A. String", "B. Number", "C. Object", "D. Boolean", "E. Array"], ans: "D" },
+      { id: 20, q: "Kumpulan instruksi JavaScript yang digabungkan dalam satu blok nama agar bisa dipanggil berkali-kali disebut...", options: ["A. Variabel", "B. Operator", "C. Statement", "D. Tipe Data", "E. Function (Fungsi)"], ans: "E" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-blue-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-blue-600">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 09: Penerapan Web Interaktif",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai fundamental JavaScript untuk antarmuka interaktif.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali mengenai event handler dan DOM.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi kembali materi Variabel, Operator, dan Fungsi JS.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-blue-500";
+      if (type === "success") icon = "fa-circle-check text-emerald-500";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-500";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>

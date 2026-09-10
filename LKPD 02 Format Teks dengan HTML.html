@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 02: Format Teks dengan HTML</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #f8fafc;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 16px 16px;
+    }
+
+    @keyframes pulse-highlight {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+      50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+    }
+    .hotspot-active { animation: pulse-highlight 1.8s infinite; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+          <i class="fa-solid fa-code text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 02: Format Teks dengan HTML</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Typography, Tag Layouting Berita, & Ordered/Unordered List</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul laboratorium praktikum HTML.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori K3LH -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Format Teks & List pada HTML
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">Materi KD: Web Programming</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          HTML menyediakan berbagai macam tag untuk mengatur struktur dan format teks (Typography). Dengan menggunakan tag yang tepat, halaman web tidak hanya terlihat rapi bagi pengguna, tetapi juga memiliki semantik yang baik untuk dibaca oleh mesin pencari (SEO).
+        </p>
+
+        <!-- HTML Standards Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-code text-blue-600 mr-1.5"></i> Ringkasan Elemen HTML Teks & List</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Kategori Tag</th>
+                  <th class="p-2.5 border-b border-slate-200">Sintaks (Tag)</th>
+                  <th class="p-2.5 border-b border-slate-200">Fungsi & Penerapan</th>
+                  <th class="p-2.5 border-b border-slate-200">Contoh Hasil / Efek Visual</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Heading & Paragraf</td>
+                  <td class="p-2.5 font-mono text-blue-600">&lt;h1&gt; s/d &lt;h6&gt;, &lt;p&gt;</td>
+                  <td class="p-2.5">Mendefinisikan judul berjenjang dan membuat blok paragraf baru.</td>
+                  <td class="p-2.5">Judul besar (h1) hingga judul terkecil (h6) dan teks biasa.</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Penekanan (Emphasis)</td>
+                  <td class="p-2.5 font-mono text-blue-600">&lt;b&gt;, &lt;strong&gt;, &lt;i&gt;, &lt;em&gt;</td>
+                  <td class="p-2.5">Menebalkan teks atau memiringkan teks. `strong` dan `em` memiliki nilai semantik penting.</td>
+                  <td class="p-2.5"><b>Teks Tebal</b> atau <i>Teks Miring</i>.</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Daftar (List)</td>
+                  <td class="p-2.5 font-mono text-blue-600">&lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;</td>
+                  <td class="p-2.5">ul (unordered/titik bullet), ol (ordered/angka berurutan), li (isi/item dari daftar).</td>
+                  <td class="p-2.5">1. Langkah A<br>2. Langkah B</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+            <h4 class="font-bold text-blue-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-paragraph text-blue-600"></i> Tipografi Dasar</h4>
+            <p class="text-blue-800">Gunakan <code>&lt;br&gt;</code> untuk mematahkan baris tanpa membuat paragraf baru, dan <code>&lt;hr&gt;</code> untuk garis horizontal pemisah konten.</p>
+          </div>
+          <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+            <h4 class="font-bold text-indigo-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-highlighter text-indigo-600"></i> Format Tambahan</h4>
+            <p class="text-indigo-800">Tag seperti <code>&lt;mark&gt;</code> (menyorot kuning), <code>&lt;sub&gt;</code> (karakter bawah spt H₂O), dan <code>&lt;sup&gt;</code> (karakter atas spt x²).</p>
+          </div>
+          <div class="bg-purple-50 border border-purple-200 rounded-xl p-3">
+            <h4 class="font-bold text-purple-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-list-ul text-purple-600"></i> Nested List</h4>
+            <p class="text-purple-800">Daftar bersarang. Kamu bisa memasukkan tag <code>&lt;ul&gt;</code> atau <code>&lt;ol&gt;</code> di dalam tag <code>&lt;li&gt;</code> milik daftar sebelumnya.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif HTML
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Terapkan tag HTML yang tepat pada layout artikel berita dan penyusunan SOP.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">Interactive Practical Modules</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Typography Layouting Halaman Berita -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-newspaper text-blue-600"></i> Simulasi 1: Layouting Halaman Berita
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">5 Elemen Teks</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Klik ikon biru pada draf artikel di bawah ini untuk memilih elemen tag HTML yang tepat agar teks terformat (Heading, Paragraf, Bold, Italic, Mark).</p>
+
+              <!-- Article Interactive View -->
+              <div class="bg-slate-50 border border-slate-300 rounded-xl p-4 relative min-h-[220px] mb-3">
+                <div class="space-y-4 text-slate-800 text-sm">
+                  
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(0)" id="hp-0" class="absolute left-0 top-0.5 w-6 h-6 bg-blue-500 text-white rounded-full font-bold text-[10px] flex items-center justify-center shadow-md hotspot-active hover:scale-110 transition"><i class="fa-solid fa-code"></i></button>
+                    <span class="text-xl font-bold font-serif">Peluncuran Teknologi Web Terbaru di Tahun 2026</span>
+                  </div>
+
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(1)" id="hp-1" class="absolute left-0 top-0.5 w-6 h-6 bg-blue-500 text-white rounded-full font-bold text-[10px] flex items-center justify-center shadow-md hotspot-active hover:scale-110 transition"><i class="fa-solid fa-code"></i></button>
+                    <span class="text-xs font-serif leading-relaxed">Jakarta - Perusahaan teknologi terkemuka baru saja mengumumkan perilisan framework HTML versi mutakhir. Inovasi ini ditujukan untuk mempermudah developer membangun website interaktif dengan kinerja tinggi.</span>
+                  </div>
+
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(2)" id="hp-2" class="absolute left-0 top-0 w-6 h-6 bg-blue-500 text-white rounded-full font-bold text-[10px] flex items-center justify-center shadow-md hotspot-active hover:scale-110 transition"><i class="fa-solid fa-code"></i></button>
+                    <span class="text-xs font-serif italic">"Ini adalah loncatan revolusioner bagi industri perangkat lunak,"</span> <span class="text-xs font-serif">ujar CEO perusahaan.</span>
+                  </div>
+                  
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(3)" id="hp-3" class="absolute left-0 top-0 w-6 h-6 bg-blue-500 text-white rounded-full font-bold text-[10px] flex items-center justify-center shadow-md hotspot-active hover:scale-110 transition"><i class="fa-solid fa-code"></i></button>
+                    <span class="text-xs font-serif">Fitur andalan dari update ini adalah <b>Sistem Rendering Ultra Cepat</b>.</span>
+                  </div>
+
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(4)" id="hp-4" class="absolute left-0 top-0 w-6 h-6 bg-blue-500 text-white rounded-full font-bold text-[10px] flex items-center justify-center shadow-md hotspot-active hover:scale-110 transition"><i class="fa-solid fa-code"></i></button>
+                    <span class="text-xs font-serif">Pembaruan sistem akan mulai digulirkan pada <span class="bg-yellow-200 px-1">15 November 2026</span> secara global.</span>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Hotspot Inspector Detail Panel -->
+              <div id="sim1-detail-box" class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-2 mb-2 hidden">
+                <!-- JS Dynamic Content -->
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mt-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Klik ikon <i class="fa-solid fa-code text-blue-500"></i> pada draf untuk mulai format.</span>
+              <button onclick="catatSimulasi(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Penyusunan Dokumen Prosedur (Ordered/Unordered List) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-list-ol text-blue-600"></i> Simulasi 2: SOP Pembuatan Web
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">Sequential Chain Quiz</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Siswa diminta membuat Standar Operasional Prosedur (SOP). Ambil keputusan tag list HTML secara berurutan!</p>
+
+              <!-- Decision Step Indicator Bar -->
+              <div class="flex items-center justify-between bg-slate-100 p-2 rounded-xl mb-3 text-[11px] font-bold text-slate-600">
+                <span id="step-lbl-1" class="px-2 py-1 bg-blue-600 text-white rounded-lg">1. Daftar Alat</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-2" class="px-2 py-1 rounded-lg">2. Item Daftar</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-3" class="px-2 py-1 rounded-lg">3. Langkah Kerja</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-4" class="px-2 py-1 rounded-lg">4. Sub-langkah</span>
+              </div>
+
+              <!-- Decision Card Box -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs mb-3">
+                <span class="text-[10px] font-bold text-blue-600 uppercase block mb-1" id="sim2-step-title">Langkah 1: Membuat Daftar Alat</span>
+                <p id="sim2-narrative" class="font-medium text-slate-900 leading-relaxed mb-3">
+                  Anda akan membuat daftar alat/software yang dibutuhkan (seperti VS Code, Browser). Urutan alat ini tidak masalah/tidak baku. Tag HTML pembuka apa yang digunakan?
+                </p>
+
+                <div class="space-y-2" id="sim2-options-container">
+                  <!-- Dynamic JS Options -->
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Selesaikan 4 rantai struktur list HTML.</span>
+              <button onclick="catatSimulasi(2)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan Praktikum -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Hasil Log Simulasi HTML
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi tag format teks dan penyusunan list yang direkap otomatis.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Objek Teks / Langkah</th>
+                <th class="px-4 py-3">Keputusan Sintaks Tag HTML</th>
+                <th class="px-4 py-3">Status Validasi W3C</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada modul simulasi di atas untuk menyimpan hasil.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi K3LH -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi Dasar Format Teks HTML
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut untuk menguji pemahaman sintaks Anda.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal Pilihan Ganda</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-blue-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Format Teks HTML Berhasil Diselesaikan!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // Data Siswa (Dipangkas sebagian untuk contoh, di aplikasi real gunakan data lengkap aslinya)
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.getElementById('sel-nama');
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          opt.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // SIMULASI 1: TYPOGRAPHY LAYOUTING
+    const typographyData = [
+      {
+        id: 0,
+        title: "Elemen 1: Judul Utama Artikel",
+        textSnippet: "Peluncuran Teknologi Web Terbaru di Tahun 2026",
+        requirement: "Teks ini adalah judul paling utama dan paling besar di halaman.",
+        signsOptions: [
+          "A. <h1>...</h1>",
+          "B. <h6>...</h6>",
+          "C. <p>...</p>"
+        ],
+        correctSign: "A. <h1>...</h1>"
+      },
+      {
+        id: 1,
+        title: "Elemen 2: Blok Paragraf Biasa",
+        textSnippet: "Jakarta - Perusahaan teknologi terkemuka...",
+        requirement: "Teks ini berupa satu blok kalimat berita biasa (Paragraf).",
+        signsOptions: [
+          "A. <b>...</b>",
+          "B. <br>...",
+          "C. <p>...</p>"
+        ],
+        correctSign: "C. <p>...</p>"
+      },
+      {
+        id: 2,
+        title: "Elemen 3: Teks Kutipan (Miring)",
+        textSnippet: "\"Ini adalah loncatan revolusioner...\"",
+        requirement: "Berupa kutipan/kata asing yang dimiringkan (Italic/Emphasis).",
+        signsOptions: [
+          "A. <i> atau <em>",
+          "B. <u> atau <ins>",
+          "C. <strong> atau <b>"
+        ],
+        correctSign: "A. <i> atau <em>"
+      },
+      {
+        id: 3,
+        title: "Elemen 4: Penekanan Penting (Tebal)",
+        textSnippet: "Sistem Rendering Ultra Cepat",
+        requirement: "Memberikan efek tebal pada frasa fitur andalan yang sangat penting.",
+        signsOptions: [
+          "A. <mark>...</mark>",
+          "B. <strong> atau <b>",
+          "C. <sub>...</sub>"
+        ],
+        correctSign: "B. <strong> atau <b>"
+      },
+      {
+        id: 4,
+        title: "Elemen 5: Sorotan Kuning (Highlight)",
+        textSnippet: "15 November 2026",
+        requirement: "Menyorot teks dengan blok warna stabilo/kuning.",
+        signsOptions: [
+          "A. <hr>",
+          "B. <mark>...</mark>",
+          "C. <em>...</em>"
+        ],
+        correctSign: "B. <mark>...</mark>"
+      }
+    ];
+
+    let currentInspectIdx = 0;
+    let userSignSelections = {};
+
+    function inspectHotspot(idx) {
+      currentInspectIdx = idx;
+      const hp = typographyData[idx];
+      const box = document.getElementById('sim1-detail-box');
+      box.classList.remove('hidden');
+
+      let optionsHtml = '';
+      hp.signsOptions.forEach(opt => {
+        const isChecked = userSignSelections[idx] === opt ? 'checked' : '';
+        optionsHtml += `
+          <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition">
+            <input type="radio" name="hp_sign_${idx}" value="${opt}" ${isChecked} onchange="selectSignForHp(${idx}, '${opt}')" class="accent-blue-600">
+            <span class="font-mono text-[11px]">${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
+          </label>
+        `;
+      });
+
+      box.innerHTML = `
+        <div class="border-b border-blue-200 pb-1.5 font-bold text-slate-900 flex justify-between items-center">
+          <span>${hp.title}</span>
+          <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Tag HTML</span>
+        </div>
+        <p class="text-slate-700 italic mt-1">"${hp.textSnippet}"</p>
+        <p class="text-slate-700"><b>Instruksi:</b> <span class="text-blue-700">${hp.requirement}</span></p>
+        <div class="pt-1">
+          <p class="font-bold text-slate-800 mb-1">Pilih Tag HTML yang Sesuai:</p>
+          <div class="space-y-1.5">${optionsHtml}</div>
+        </div>
+      `;
+
+      document.getElementById('sim1-status-text').innerText = `Memeriksa Elemen #${idx+1}. Tentukan tag HTML yang tepat.`;
+    }
+
+    function selectSignForHp(hpIdx, signVal) {
+      userSignSelections[hpIdx] = signVal;
+      showToast("Tag Dipilih", `Elemen #${hpIdx+1} dipasangkan tag HTML.`, "info");
+    }
+
+    // SIMULASI 2: PENYUSUNAN DOKUMEN PROSEDUR (LIST BERANTAI)
+    let currentEvacStep = 1;
+    let evacChoices = {};
+
+    const listStepsData = {
+      1: {
+        title: "Langkah 1: Membuat Daftar Alat/Bahan (Unordered)",
+        narrative: "SOP memerlukan senarai (list) perlengkapan seperti Komputer, Kabel UTP, dan Tang Crimping. Urutan alat tidak masalah. Tag pembuka apa yang paling tepat?",
+        options: [
+          { label: "A. &lt;ol&gt;", correct: false, feedback: "KURANG TEPAT. <ol> adalah Ordered List (berurutan angka)." },
+          { label: "B. &lt;ul&gt;", correct: true, feedback: "TEPAT! <ul> (Unordered List) menghasilkan daftar peluru (bullet)." },
+          { label: "C. &lt;dl&gt;", correct: false, feedback: "SALAH. <dl> digunakan untuk deskripsi istilah (Description List)." }
+        ]
+      },
+      2: {
+        title: "Langkah 2: Menambahkan Item Alat ke dalam Daftar",
+        narrative: "Kamu sudah membuka tag &lt;ul&gt;. Tag apa yang wajib dipakai untuk mengapit setiap item seperti 'Kabel UTP' dan 'Komputer'?",
+        options: [
+          { label: "A. &lt;li&gt;", correct: true, feedback: "TEPAT! <li> (List Item) mendefinisikan masing-masing baris item." },
+          { label: "B. &lt;p&gt;", correct: false, feedback: "SALAH. Paragraf <p> tidak valid sebagai anak langsung (direct child) dari <ul> atau <ol>." },
+          { label: "C. &lt;item&gt;", correct: false, feedback: "SALAH. Tag <item> bukan standar spesifikasi HTML." }
+        ]
+      },
+      3: {
+        title: "Langkah 3: Membuat Langkah Kerja (Ordered)",
+        narrative: "Selanjutnya, buatlah panduan langkah kerja instalasi yang HARUS dilakukan berurutan mulai dari nomor 1, 2, dan 3. Tag apa yang dipakai?",
+        options: [
+          { label: "A. &lt;ul&gt;", correct: false, feedback: "SALAH! <ul> akan memunculkan titik (bullet), bukan penomoran langkah berurutan." },
+          { label: "B. &lt;li&gt;", correct: false, feedback: "KURANG TEPAT. <li> harus berada di dalam tag kontainer/pembungkus daftarnya." },
+          { label: "C. &lt;ol&gt;", correct: true, feedback: "TEPAT! <ol> (Ordered List) otomatis men-generate nomor 1, 2, 3, dst." }
+        ]
+      },
+      4: {
+        title: "Langkah 4: Membuat Daftar Bersarang (Nested List)",
+        narrative: "Di Langkah 2 instalasi, ada rincian tambahan berpoin (tidak berurutan). Bagaimana cara menulis tag-nya?",
+        options: [
+          { label: "A. Letakkan &lt;ul&gt; baru di DALAM tag &lt;li&gt; milik daftar &lt;ol&gt; utama.", correct: true, feedback: "SANGAT TEPAT! Ini adalah cara standar membuat Nested List pada HTML." },
+          { label: "B. Letakkan &lt;ul&gt; langsung setelah &lt;ol&gt; tanpa masuk &lt;li&gt;.", correct: false, feedback: "SALAH STRUKTUR. Ini akan memisahkan daftar, bukan bersarang/nesting di poin tersebut." },
+          { label: "C. Menggunakan atribut type='nested' pada &lt;ol&gt;.", correct: false, feedback: "SALAH. Atribut type pada list hanya untuk mengubah style angka/huruf/bullet." }
+        ]
+      }
+    };
+
+    function renderEvacStep(step) {
+      currentEvacStep = step;
+      const data = listStepsData[step];
+
+      document.getElementById('sim2-step-title').innerText = data.title;
+      document.getElementById('sim2-narrative').innerHTML = data.narrative;
+
+      for (let i = 1; i <= 4; i++) {
+        const lbl = document.getElementById(`step-lbl-${i}`);
+        if (i === step) lbl.className = "px-2 py-1 bg-blue-600 text-white rounded-lg";
+        else if (i < step) lbl.className = "px-2 py-1 bg-emerald-600 text-white rounded-lg";
+        else lbl.className = "px-2 py-1 bg-slate-200 text-slate-600 rounded-lg";
+      }
+
+      const container = document.getElementById('sim2-options-container');
+      container.innerHTML = '';
+
+      data.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 font-medium text-slate-800 transition text-xs shadow-2xs font-mono";
+        btn.innerHTML = opt.label;
+        btn.onclick = () => chooseEvacOption(step, idx, opt.correct, opt.feedback);
+        container.appendChild(btn);
+      });
+    }
+
+    function chooseEvacOption(step, optIdx, isCorrect, feedbackText) {
+      evacChoices[step] = { optIdx, isCorrect, feedbackText };
+
+      if (isCorrect) {
+        showToast("Sintaks Benar!", feedbackText, "success");
+        if (step < 4) {
+          renderEvacStep(step + 1);
+        } else {
+          document.getElementById('sim2-status-text').innerText = "Rantai Penyusunan Dokumen HTML Selesai!";
+        }
+      } else {
+        showToast("Error / Tidak Valid!", feedbackText, "warning");
+      }
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        const hp = typographyData[currentInspectIdx];
+        const selectedSign = userSignSelections[currentInspectIdx];
+
+        if (!selectedSign) {
+          showToast("Pilih Tag HTML", "Harap pilih opsi tag HTML untuk elemen ini terlebih dahulu!", "warning");
+          return;
+        }
+
+        const isCorrect = selectedSign === hp.correctSign;
+        const tagText = selectedSign.split(" ")[0].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        logEntry = {
+          modul: "Simulasi 1: Layouting HTML",
+          param: `${hp.title}`,
+          hasil: `Tag: ${tagText}`,
+          status: isCorrect ? "PASS (Valid HTML)" : "ERROR (Salah Semantik)"
+        };
+      } else if (simNum === 2) {
+        const step1Pass = evacChoices[1] && evacChoices[1].isCorrect;
+        const step2Pass = evacChoices[2] && evacChoices[2].isCorrect;
+        const step3Pass = evacChoices[3] && evacChoices[3].isCorrect;
+        const step4Pass = evacChoices[4] && evacChoices[4].isCorrect;
+
+        const allPass = step1Pass && step2Pass && step3Pass && step4Pass;
+
+        logEntry = {
+          modul: "Simulasi 2: Penyusunan Dokumen (List)",
+          param: "Skenario SOP List Bersarang",
+          hasil: `Rantai Tag List: Step 1-4 Terevaluasi`,
+          status: allPass ? "PASS (Struktur Valid)" : "ERROR (Struktur Rusak)"
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil pengamatan sintaks berhasil masuk tabel.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data pengamatan. Klik tombol "+ Catat Log" pada modul simulasi di atas untuk menyimpan hasil.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-emerald-100 text-emerald-800 border border-emerald-200";
+        if (row.status.includes("ERROR")) badgeColor = "bg-rose-100 text-rose-800 border border-rose-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-blue-700">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data hasil simulasi untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Objek Teks,Keputusan Tag,Status Validasi\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${d.hasil.replace(/&lt;/g, "<").replace(/&gt;/g, ">")}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "HTML_LKPD02_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil simulasi terunduh.", "success");
+    }
+
+    // QUESTION BANK HTML TEXT FORMATTING (20 SOAL)
+    const questionBankHTML = [
+      { id: 1, q: "Kepanjangan dari HTML adalah...", options: ["A. HyperText Markup Language", "B. HyperText Machine Language", "C. Hyper Tool Markup Language", "D. Home Text Markup Language", "E. Hyperlink Text Markup Logic"], ans: "A" },
+      { id: 2, q: "Tag HTML mana yang digunakan untuk membuat judul (heading) dengan ukuran paling besar?", options: ["A. &lt;heading&gt;", "B. &lt;h6&gt;", "C. &lt;head&gt;", "D. &lt;h1&gt;", "E. &lt;title&gt;"], ans: "D" },
+      { id: 3, q: "Untuk membuat sebuah paragraf dalam HTML, kita menggunakan tag...", options: ["A. &lt;pg&gt;", "B. &lt;paragraf&gt;", "C. &lt;p&gt;", "D. &lt;text&gt;", "E. &lt;br&gt;"], ans: "C" },
+      { id: 4, q: "Tag &lt;br&gt; pada HTML berfungsi untuk...", options: ["A. Membuat garis horizontal", "B. Menebalkan teks", "C. Membuat paragraf baru", "D. Mematahkan/pindah baris ke bawah (Line Break)", "E. Membuat daftar list"], ans: "D" },
+      { id: 5, q: "Pilihlah tag yang secara semantik benar untuk mencetak tebal sebuah teks yang dianggap sangat penting!", options: ["A. &lt;b&gt;", "B. &lt;important&gt;", "C. &lt;bold&gt;", "D. &lt;strong&gt;", "E. &lt;em&gt;"], ans: "D" },
+      { id: 6, q: "Apa perbedaan antara tag &lt;i&gt; dan &lt;em&gt; pada HTML?", options: ["A. &lt;i&gt; membuat tebal, &lt;em&gt; membuat miring", "B. Keduanya membuat teks miring, namun &lt;em&gt; memberi nilai penekanan semantik untuk Screen Reader/SEO", "C. &lt;i&gt; untuk gambar, &lt;em&gt; untuk teks", "D. Tidak ada bedanya sama sekali", "E. &lt;em&gt; memberi warna pada teks"], ans: "B" },
+      { id: 7, q: "Untuk memberi garis bawah (underline) pada teks, tag yang digunakan adalah...", options: ["A. &lt;under&gt;", "B. &lt;u&gt;", "C. &lt;i&gt;", "D. &lt;line&gt;", "E. &lt;sub&gt;"], ans: "B" },
+      { id: 8, q: "Jika Anda ingin mencoret sebuah kata (strikethrough) seperti menampilkan harga diskon, tag yang tepat adalah...", options: ["A. &lt;strike&gt; atau &lt;s&gt; / &lt;del&gt;", "B. &lt;cut&gt;", "C. &lt;cross&gt;", "D. &lt;remove&gt;", "E. &lt;hide&gt;"], ans: "A" },
+      { id: 9, q: "Tag &lt;sup&gt; digunakan untuk membuat...", options: ["A. Superscript (Teks kecil di atas, seperti pangkat kuadrat)", "B. Subscript (Teks kecil di bawah, seperti rumus kimia)", "C. Teks berkedip (Super Blink)", "D. Super Heading", "E. Teks menjadi rata tengah"], ans: "A" },
+      { id: 10, q: "Untuk menampilkan rumus air yaitu H₂O dengan angka 2 berada di posisi bawah, angka 2 tersebut harus diapit dengan tag...", options: ["A. &lt;sup&gt;", "B. &lt;lower&gt;", "C. &lt;down&gt;", "D. &lt;sub&gt;", "E. &lt;small&gt;"], ans: "D" },
+      { id: 11, q: "Bagaimana cara membuat teks ter-highlight atau tersorot dengan warna kuning (seperti stabilo) pada HTML5?", options: ["A. &lt;highlight&gt;teks&lt;/highlight&gt;", "B. &lt;bg-yellow&gt;teks&lt;/bg-yellow&gt;", "C. &lt;mark&gt;teks&lt;/mark&gt;", "D. &lt;color&gt;teks&lt;/color&gt;", "E. &lt;select&gt;teks&lt;/select&gt;"], ans: "C" },
+      { id: 12, q: "Elemen dasar untuk membuat daftar berurutan nomor (1, 2, 3) adalah...", options: ["A. &lt;dl&gt;", "B. &lt;list&gt;", "C. &lt;ul&gt;", "D. &lt;ol&gt;", "E. &lt;li&gt;"], ans: "D" },
+      { id: 13, q: "Elemen pembungkus untuk membuat daftar dengan tanda titik / bullet (tidak berurutan) adalah...", options: ["A. &lt;ul&gt;", "B. &lt;ol&gt;", "C. &lt;bullet&gt;", "D. &lt;dl&gt;", "E. &lt;point&gt;"], ans: "A" },
+      { id: 14, q: "Di dalam tag &lt;ul&gt; maupun &lt;ol&gt;, kita harus mendeklarasikan item daftar dengan menggunakan tag...", options: ["A. &lt;item&gt;", "B. &lt;li&gt;", "C. &lt;list&gt;", "D. &lt;dt&gt;", "E. &lt;dd&gt;"], ans: "B" },
+      { id: 15, q: "Secara default, jika kita menggunakan tag &lt;ol&gt; tanpa atribut apapun, penomoran akan berupa...", options: ["A. Huruf abjad (A, B, C)", "B. Angka romawi (I, II, III)", "C. Titik hitam (Bullet point)", "D. Angka biasa (1, 2, 3)", "E. Kotak hitam (Square)"], ans: "D" },
+      { id: 16, q: "Untuk memunculkan garis pemisah secara mendatar/horizontal dalam halaman HTML, digunakan tag...", options: ["A. &lt;br&gt;", "B. &lt;line&gt;", "C. &lt;hr&gt;", "D. &lt;divide&gt;", "E. &lt;border&gt;"], ans: "C" },
+      { id: 17, q: "Tag HTML yang berguna untuk menampilkan teks pra-format, sehingga spasi dan jeda baris aslinya dipertahankan (seperti pada kodingan) adalah...", options: ["A. &lt;code&gt;", "B. &lt;pre&gt;", "C. &lt;samp&gt;", "D. &lt;kbd&gt;", "E. &lt;var&gt;"], ans: "B" },
+      { id: 18, q: "Manakah struktur 'Nested List' (daftar bersarang) yang penulisannya BENAR?", options: ["A. &lt;ul&gt; &lt;li&gt;Item 1 &lt;ul&gt;&lt;li&gt;Sub 1&lt;/li&gt;&lt;/ul&gt; &lt;/li&gt; &lt;/ul&gt;", "B. &lt;ul&gt; &lt;ul&gt;&lt;li&gt;Sub 1&lt;/li&gt;&lt;/ul&gt; &lt;/ul&gt;", "C. &lt;ul&gt; &lt;li&gt;Item 1&lt;/li&gt; &lt;/ul&gt; &lt;ul&gt;...&lt;/ul&gt;", "D. &lt;ol&gt; &lt;li&gt;&lt;/li&gt; &lt;/ul&gt;", "E. &lt;li&gt;&lt;ol&gt;&lt;li&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;"], ans: "A" },
+      { id: 19, q: "Atribut type pada ordered list &lt;ol type='a'&gt; akan menghasilkan list berurutan dengan format...", options: ["A. 1, 2, 3", "B. I, II, III", "C. a, b, c", "D. A, B, C", "E. i, ii, iii"], ans: "C" },
+      { id: 20, q: "Untuk merubah tampilan dari tipe penomoran atau jenis bullet pada list modern saat ini, sangat dianjurkan untuk menggunakan...", options: ["A. Atribut HTML kuno", "B. CSS (Cascading Style Sheets) menggunakan list-style-type", "C. JavaScript DOM", "D. Tag &lt;style_list&gt;", "E. Tag &lt;format&gt;"], ans: "B" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankHTML.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-blue-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-blue-600">
+              <span class="font-mono">${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Tampilkan indikator loading pada tombol
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankHTML.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankHTML.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      // Payload untuk Apps Script
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 02: Format Teks HTML",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Terjadi kegagalan komunikasi jaringan.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda sudah mahir menggunakan tag tipografi HTML & struktur Lists.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali penggunaan Nested List dan tag semantik seperti strong & em.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi materi dasar tag format teks (Heading, Paragraf, Bold, Italic).";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD HTML ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-blue-500";
+      if (type === "success") icon = "fa-circle-check text-emerald-500";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-500";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderEvacStep(1);
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 01: Teknologi Aplikasi Web (Arsitektur Client-Server)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #0f172a;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    @keyframes pulse-network {
+      0%, 100% { background-color: rgba(59, 130, 246, 0.1); }
+      50% { background-color: rgba(59, 130, 246, 0.3); }
+    }
+    .network-row:hover { animation: none; background-color: rgba(255,255,255,0.1); }
+    .network-active { background-color: rgba(59, 130, 246, 0.2); border-left: 3px solid #3b82f6; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+          <i class="fa-solid fa-laptop-code text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 01: Teknologi Aplikasi Web</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Arsitektur Client-Server, HTTP Request/Response, & Ekosistem Web</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Ekosistem Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Arsitektur Client-Server & Ekosistem Web
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">Dasar Web</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          <b>Aplikasi Web</b> beroperasi menggunakan model <b>Client-Server Architecture</b>. Klien (seperti Web Browser) mengirimkan *HTTP Request* kepada Web Server. Server kemudian memproses permintaan tersebut dan mengembalikan *HTTP Response* berupa kode status dan resource (HTML, CSS, JS, Gambar, dll).
+        </p>
+
+        <!-- Web Standards Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-solid fa-server text-blue-600 mr-1.5"></i> Komponen Utama Web</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Komponen</th>
+                  <th class="p-2.5 border-b border-slate-200">Contoh Software / Teknologi</th>
+                  <th class="p-2.5 border-b border-slate-200">Fungsi Utama</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Web Client (Browser)</td>
+                  <td class="p-2.5 font-mono">Chrome, Firefox, Safari</td>
+                  <td class="p-2.5">Menerjemahkan kode HTML/CSS/JS menjadi antarmuka visual yang dipahami manusia.</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Web Server</td>
+                  <td class="p-2.5 font-mono">Apache, Nginx, LiteSpeed</td>
+                  <td class="p-2.5">Menyimpan file web dan melayani HTTP Request dari browser klien secara nonstop.</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-bold text-slate-900">Bahasa Pemrograman (Back-end)</td>
+                  <td class="p-2.5 font-mono">PHP, Python, Node.js, Java</td>
+                  <td class="p-2.5">Menangani logika bisnis, keamanan, dan berinteraksi dengan database (MySQL, PostgreSQL).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+            <h4 class="font-bold text-blue-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-check-circle text-blue-600"></i> Status 2xx (Success)</h4>
+            <p class="text-blue-800">Contoh: <b>200 OK</b>. Menandakan bahwa request dari client berhasil diterima, dipahami, dan diproses oleh server.</p>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <h4 class="font-bold text-amber-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation text-amber-600"></i> Status 4xx (Client Error)</h4>
+            <p class="text-amber-800">Contoh: <b>404 Not Found</b>. Terjadi kesalahan di sisi klien, misalnya meminta URL atau file yang tidak ada di server.</p>
+          </div>
+          <div class="bg-rose-50 border border-rose-200 rounded-xl p-3">
+            <h4 class="font-bold text-rose-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-bomb text-rose-600"></i> Status 5xx (Server Error)</h4>
+            <p class="text-rose-800">Contoh: <b>500 Internal Server Error</b>. Klien mengirim request benar, namun terjadi masalah pada kode server/database.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif Web
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Analisis traffic jaringan pada browser dan lakukan pemetaan ekosistem perangkat lunak web.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">Interactive Modules</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Client-Server Architecture Demo -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-network-wired text-blue-600"></i> Simulasi 1: Analisis Traffic Browser
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">DevTools (F12) Network</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Klik setiap baris *Request* pada simulasi tab Network di bawah ini. Tentukan HTTP Status Code yang tepat berdasarkan skenario request ke server.</p>
+
+              <!-- Network Tab Interactive View -->
+              <div class="grid-bg-pattern rounded-xl p-0 relative min-h-[200px] mb-3 overflow-hidden font-mono-code text-[11px] shadow-inner">
+                <!-- Header Network -->
+                <div class="bg-slate-800 border-b border-slate-700 py-1.5 px-3 flex font-bold text-slate-400">
+                  <div class="w-2/5">Name (File)</div>
+                  <div class="w-1/5">Method</div>
+                  <div class="w-1/5">Domain</div>
+                  <div class="w-1/5 text-right">Status</div>
+                </div>
+
+                <!-- Network Requests (Hotspots) -->
+                <div class="flex flex-col">
+                  <button onclick="inspectHotspot(0)" id="hp-0" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-2/5 font-semibold flex items-center gap-1"><i class="fa-regular fa-file-code text-blue-400"></i> index.html</div>
+                    <div class="w-1/5 text-emerald-400">GET</div>
+                    <div class="w-1/5">mysite.com</div>
+                    <div class="w-1/5 text-right font-bold" id="stat-0">???</div>
+                  </button>
+                  <button onclick="inspectHotspot(1)" id="hp-1" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-2/5 font-semibold flex items-center gap-1"><i class="fa-brands fa-css3-alt text-cyan-400"></i> style.css</div>
+                    <div class="w-1/5 text-emerald-400">GET</div>
+                    <div class="w-1/5">mysite.com</div>
+                    <div class="w-1/5 text-right font-bold" id="stat-1">???</div>
+                  </button>
+                  <button onclick="inspectHotspot(2)" id="hp-2" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-2/5 font-semibold flex items-center gap-1"><i class="fa-solid fa-right-to-bracket text-amber-400"></i> /api/login</div>
+                    <div class="w-1/5 text-amber-400">POST</div>
+                    <div class="w-1/5">api.mysite.com</div>
+                    <div class="w-1/5 text-right font-bold" id="stat-2">???</div>
+                  </button>
+                  <button onclick="inspectHotspot(3)" id="hp-3" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-2/5 font-semibold flex items-center gap-1"><i class="fa-regular fa-image text-rose-400"></i> banner-lama.jpg</div>
+                    <div class="w-1/5 text-emerald-400">GET</div>
+                    <div class="w-1/5">cdn.mysite.com</div>
+                    <div class="w-1/5 text-right font-bold" id="stat-3">???</div>
+                  </button>
+                  <button onclick="inspectHotspot(4)" id="hp-4" class="network-row w-full text-left flex py-2 px-3 text-slate-300 transition cursor-pointer border-l-2 border-transparent">
+                    <div class="w-2/5 font-semibold flex items-center gap-1"><i class="fa-solid fa-database text-purple-400"></i> /api/db_sync</div>
+                    <div class="w-1/5 text-emerald-400">GET</div>
+                    <div class="w-1/5">api.mysite.com</div>
+                    <div class="w-1/5 text-right font-bold" id="stat-4">???</div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Inspector Detail Panel -->
+              <div id="sim1-detail-box" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2 mb-2 hidden">
+                <!-- JS Dynamic Content -->
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Klik baris request pada tab Network untuk inspeksi.</span>
+              <button onclick="catatSimulasi(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Analisis
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Ekosistem Web (Pemilihan Tech Stack) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-layer-group text-blue-600"></i> Simulasi 2: Mapping Tech Stack Web
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">Project: Toko Online</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Klien meminta Anda membangun aplikasi <b>E-Commerce (Toko Online)</b> yang dinamis. Tentukan ekosistem teknologi yang tepat secara berurutan!</p>
+
+              <!-- Decision Step Indicator Bar -->
+              <div class="flex items-center justify-between bg-slate-100 p-2 rounded-xl mb-3 text-[11px] font-bold text-slate-600">
+                <span id="step-lbl-1" class="px-1.5 py-1 bg-blue-600 text-white rounded-lg">1. Front-End</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-2" class="px-1.5 py-1 rounded-lg">2. Back-End</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-3" class="px-1.5 py-1 rounded-lg">3. Web Server</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-4" class="px-1.5 py-1 rounded-lg">4. Database</span>
+              </div>
+
+              <!-- Decision Card Box -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs mb-3">
+                <span class="text-[10px] font-bold text-blue-600 uppercase block mb-1" id="sim2-step-title">Langkah 1: Tampilan Antarmuka</span>
+                <p id="sim2-narrative" class="font-medium text-slate-900 leading-relaxed mb-3">
+                  Toko online memerlukan tampilan visual di browser (katalog produk, tombol beli, styling). Teknologi apa yang Anda gunakan untuk lapisan Front-end ini?
+                </p>
+
+                <div class="space-y-2" id="sim2-options-container">
+                  <!-- Dynamic JS Options -->
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Selesaikan 4 tahapan arsitektur aplikasi.</span>
+              <button onclick="catatSimulasi(2)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Stack
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum Web
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi log analisis traffic HTTP dan struktur teknologi aplikasi web.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Objek / Tahapan</th>
+                <th class="px-4 py-3">Analisis / Pilihan Teknologi</th>
+                <th class="px-4 py-3">Status Pemahaman</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Klik tombol "+ Catat Analisis" pada modul simulasi di atas untuk menyimpan hasil.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi Teknologi Web
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut mengenai arsitektur dan ekosistem web.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal Pilihan Ganda</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-blue-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Teknologi Web Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.getElementById('sel-nama');
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          opt.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // SIMULASI 1: ANALISIS TRAFFIC BROWSER (NETWORK TAB)
+    const hotspotsData = [
+      {
+        id: 0,
+        title: "Request: index.html (File Utama)",
+        desc: "Browser klien meminta dokumen HTML utama dari web server untuk pertama kalinya.",
+        target: "Server menemukan file HTML dan mengirimkannya ke klien dengan sukses.",
+        signsOptions: [
+          "A. 200 OK (Berhasil)",
+          "B. 404 Not Found",
+          "C. 500 Internal Server Error"
+        ],
+        correctSign: "A. 200 OK (Berhasil)",
+        code: "200"
+      },
+      {
+        id: 1,
+        title: "Request: style.css (Styling)",
+        desc: "Browser meminta file CSS untuk menghias halaman agar terlihat rapi.",
+        target: "File CSS berhasil dilayani oleh server tanpa hambatan.",
+        signsOptions: [
+          "A. 403 Forbidden",
+          "B. 200 OK (Berhasil)",
+          "C. 502 Bad Gateway"
+        ],
+        correctSign: "B. 200 OK (Berhasil)",
+        code: "200"
+      },
+      {
+        id: 2,
+        title: "Request: /api/login (Method POST)",
+        desc: "User menekan tombol submit dan mengirimkan username/password ke server API.",
+        target: "Server menerima form data dan memberikan akses (login sukses).",
+        signsOptions: [
+          "A. 200 OK (Berhasil)",
+          "B. 404 Not Found",
+          "C. 500 Internal Server Error"
+        ],
+        correctSign: "A. 200 OK (Berhasil)",
+        code: "200"
+      },
+      {
+        id: 3,
+        title: "Request: banner-lama.jpg",
+        desc: "Browser mencoba mengunduh gambar banner, namun file tersebut telah dihapus dari direktori server oleh admin.",
+        target: "Server menolak request karena resource / gambar tidak dapat ditemukan.",
+        signsOptions: [
+          "A. 200 OK (Berhasil)",
+          "B. 404 Not Found",
+          "C. 500 Internal Server Error"
+        ],
+        correctSign: "B. 404 Not Found",
+        code: "404"
+      },
+      {
+        id: 4,
+        title: "Request: /api/db_sync (Endpoint Data)",
+        desc: "Browser meminta sinkronisasi data terbaru. Namun, terjadi coding error (bug) di sisi server PHP.",
+        target: "Aplikasi server *crash* atau mengalami masalah internal saat mengeksekusi query database.",
+        signsOptions: [
+          "A. 200 OK (Berhasil)",
+          "B. 404 Not Found",
+          "C. 500 Internal Server Error"
+        ],
+        correctSign: "C. 500 Internal Server Error",
+        code: "500"
+      }
+    ];
+
+    let currentInspectIdx = 0;
+    let userSignSelections = {};
+
+    function inspectHotspot(idx) {
+      currentInspectIdx = idx;
+      const hp = hotspotsData[idx];
+      
+      // Styling active row
+      for(let i=0; i<5; i++){
+          document.getElementById('hp-'+i).classList.remove('network-active');
+      }
+      document.getElementById('hp-'+idx).classList.add('network-active');
+
+      const box = document.getElementById('sim1-detail-box');
+      box.classList.remove('hidden');
+
+      let optionsHtml = '';
+      hp.signsOptions.forEach(opt => {
+        const isChecked = userSignSelections[idx] === opt ? 'checked' : '';
+        optionsHtml += `
+          <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition">
+            <input type="radio" name="hp_sign_${idx}" value="${opt}" ${isChecked} onchange="selectSignForHp(${idx}, '${opt}')" class="accent-blue-600">
+            <span>${opt}</span>
+          </label>
+        `;
+      });
+
+      box.innerHTML = `
+        <div class="border-b border-slate-200 pb-1.5 font-bold text-slate-900 flex justify-between items-center">
+          <span>${hp.title}</span>
+          <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Analisis Jaringan</span>
+        </div>
+        <p class="text-slate-700"><b>Kondisi:</b> ${hp.desc}</p>
+        <p class="text-slate-700"><b>Target Hasil:</b> <span class="text-blue-600 font-bold">${hp.target}</span></p>
+        <div class="pt-1">
+          <p class="font-bold text-slate-800 mb-1">Pilih HTTP Status Code dari Server:</p>
+          <div class="space-y-1.5">${optionsHtml}</div>
+        </div>
+      `;
+
+      document.getElementById('sim1-status-text').innerText = `Menganalisa request indeks #${idx+1}.`;
+    }
+
+    function selectSignForHp(hpIdx, signVal) {
+      userSignSelections[hpIdx] = signVal;
+      showToast("Status Code Dipilih", `Request #${hpIdx+1} diatur ke ${signVal.substring(0,10)}...`, "info");
+      
+      // Update UI Status Tab Network
+      let codeVal = signVal.substring(3,6).trim();
+      let statusEl = document.getElementById(`stat-${hpIdx}`);
+      statusEl.innerText = codeVal;
+      
+      // Color coding status
+      if(signVal.includes("200")) statusEl.className = "w-1/5 text-right font-bold text-emerald-400";
+      else if(signVal.includes("404")) statusEl.className = "w-1/5 text-right font-bold text-amber-400";
+      else if(signVal.includes("500")) statusEl.className = "w-1/5 text-right font-bold text-rose-400";
+      else statusEl.className = "w-1/5 text-right font-bold text-slate-300";
+    }
+
+    // SIMULASI 2: MAPPING TECH STACK (BERANTAI)
+    let currentTechStep = 1;
+    let techChoices = {};
+
+    const techStackStepsData = {
+      1: {
+        title: "Langkah 1: Bahasa Pemrograman Front-End",
+        narrative: "Toko online memerlukan antarmuka yang menarik di browser (katalog produk, keranjang, tombol interaktif). Teknologi apa yang Anda pilih sebagai fondasi antarmuka klien (Front-End)?",
+        options: [
+          { label: "A. HTML, CSS, dan JavaScript", correct: true, feedback: "TEPAT! HTML menstruktur, CSS menghias, dan JS memberi interaktivitas di browser klien." },
+          { label: "B. C++, Assembly, dan Pascal", correct: false, feedback: "TIDAK TEPAT. Bahasa tersebut umumnya untuk aplikasi sistem tertanam/desktop, bukan front-end web standar." },
+          { label: "C. MySQL dan PostgreSQL", correct: false, feedback: "SALAH. Itu adalah sistem manajemen database, bukan bahasa antarmuka web." }
+        ]
+      },
+      2: {
+        title: "Langkah 2: Bahasa Pemrograman Back-End",
+        narrative: "User mengklik tombol 'Beli'. Anda butuh sistem di sisi server untuk memproses diskon harga dan verifikasi pembayaran. Bahasa apa yang cocok untuk di eksekusi di server (Back-End)?",
+        options: [
+          { label: "A. Microsoft Word dan Excel", correct: false, feedback: "SALAH FATAL. Itu aplikasi perkantoran, bukan bahasa pemrosesan server." },
+          { label: "B. HTML dan CSS", correct: false, feedback: "TIDAK TEPAT. HTML/CSS berjalan di klien (browser) dan tidak memiliki logika pemrograman kompleks." },
+          { label: "C. PHP, Python, atau Node.js", correct: true, feedback: "TEPAT! Bahasa ini memproses logika bisnis di sisi server dan dinamis." }
+        ]
+      },
+      3: {
+        title: "Langkah 3: Pemilihan Web Server",
+        narrative: "Aplikasi Back-End Anda sudah selesai dikoding. Kini Anda perlu software yang akan menerima HTTP Request dari internet (port 80/443) 24 jam nonstop.",
+        options: [
+          { label: "A. Apache atau Nginx", correct: true, feedback: "TEPAT! Keduanya adalah Web Server populer yang andal menangani traffic HTTP." },
+          { label: "B. Adobe Photoshop", correct: false, feedback: "TIDAK NYAMBUNG. Photoshop untuk manipulasi gambar, bukan melayani web." },
+          { label: "C. Google Chrome", correct: false, feedback: "SALAH. Chrome adalah Web Browser (Client), bukan Web Server." }
+        ]
+      },
+      4: {
+        title: "Langkah 4: Penyimpanan Data (Database)",
+        narrative: "Toko online menyimpan jutaan data barang dan riwayat transaksi pembeli. Anda harus menyimpan ini dengan rapi dan aman.",
+        options: [
+          { label: "A. Menyimpannya di dalam file Notepad (.txt) saja.", correct: false, feedback: "SANGAT BURUK. Sulit untuk query, berisiko korup, dan tidak aman untuk transaksi." },
+          { label: "B. Relational Database Management System (MySQL / PostgreSQL)", correct: true, feedback: "SANGAT TEPAT! RDBMS didesain untuk query data secara terstruktur, cepat, dan aman." },
+          { label: "C. Menyimpannya sementara di RAM (Random Access Memory).", correct: false, feedback: "SALAH! Data di RAM bersifat volatile (hilang saat server mati). Toko butuh persisten data." }
+        ]
+      }
+    };
+
+    function renderTechStep(step) {
+      currentTechStep = step;
+      const data = techStackStepsData[step];
+
+      document.getElementById('sim2-step-title').innerText = data.title;
+      document.getElementById('sim2-narrative').innerText = data.narrative;
+
+      for (let i = 1; i <= 4; i++) {
+        const lbl = document.getElementById(`step-lbl-${i}`);
+        if (i === step) lbl.className = "px-1.5 py-1 bg-blue-600 text-white rounded-lg";
+        else if (i < step) lbl.className = "px-1.5 py-1 bg-emerald-600 text-white rounded-lg";
+        else lbl.className = "px-1.5 py-1 bg-slate-200 text-slate-600 rounded-lg";
+      }
+
+      const container = document.getElementById('sim2-options-container');
+      container.innerHTML = '';
+
+      data.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 font-medium text-slate-800 transition text-xs shadow-2xs";
+        btn.innerHTML = opt.label;
+        btn.onclick = () => chooseTechOption(step, idx, opt.correct, opt.feedback);
+        container.appendChild(btn);
+      });
+    }
+
+    function chooseTechOption(step, optIdx, isCorrect, feedbackText) {
+      techChoices[step] = { optIdx, isCorrect, feedbackText };
+
+      if (isCorrect) {
+        showToast("Keputusan Tepat!", feedbackText, "success");
+        if (step < 4) {
+          renderTechStep(step + 1);
+        } else {
+          document.getElementById('sim2-status-text').innerText = "Arsitektur Tech Stack Selesai dengan SUKSES!";
+        }
+      } else {
+        showToast("Kurang Tepat!", feedbackText, "warning");
+      }
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        const hp = hotspotsData[currentInspectIdx];
+        const selectedSign = userSignSelections[currentInspectIdx];
+
+        if (!selectedSign) {
+          showToast("Pilih Status", "Harap pilih opsi HTTP Status Code terlebih dahulu!", "warning");
+          return;
+        }
+
+        const isCorrect = selectedSign === hp.correctSign;
+
+        logEntry = {
+          modul: "Simulasi 1: Network Traffic",
+          param: `${hp.title}`,
+          hasil: `Status: ${hp.code}`,
+          status: isCorrect ? "PASS (Sesuai Logika)" : "RISK (Error Pemahaman)"
+        };
+      } else if (simNum === 2) {
+        const step1Pass = techChoices[1] && techChoices[1].isCorrect;
+        const step2Pass = techChoices[2] && techChoices[2].isCorrect;
+        const step3Pass = techChoices[3] && techChoices[3].isCorrect;
+        const step4Pass = techChoices[4] && techChoices[4].isCorrect;
+
+        const allPass = step1Pass && step2Pass && step3Pass && step4Pass;
+
+        logEntry = {
+          modul: "Simulasi 2: Tech Stack E-Commerce",
+          param: "Pemilihan Arsitektur Software",
+          hasil: `Layer 1-4 Evaluated`,
+          status: allPass ? "PASS (Sistem Optimal)" : "RISK (Sistem Gagal)"
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil praktikum web berhasil dimasukkan ke tabel.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Klik tombol "+ Catat Analisis" pada modul simulasi di atas untuk menyimpan hasil.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-emerald-100 text-emerald-800 border border-emerald-200";
+        if (row.status.includes("RISK")) badgeColor = "bg-rose-100 text-rose-800 border border-rose-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 font-mono-code text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-slate-900">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Objek/Tahapan,Pilihan Teknologi,Status Pemahaman\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${d.hasil}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "WebTech_LKPD01_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil analisis web terunduh.", "success");
+    }
+
+    // QUESTION BANK TEKNOLOGI WEB (20 SOAL)
+    const questionBankWeb = [
+      { id: 1, q: "Aplikasi (seperti Chrome atau Firefox) yang berfungsi meminta dan menampilkan halaman dari internet disebut...", options: ["A. Web Server", "B. Web Browser (Client)", "C. Database", "D. Router", "E. Search Engine"], ans: "B" },
+      { id: 2, q: "Kepanjangan dari HTTP adalah...", options: ["A. Hyper Text Transfer Protocol", "B. Hyper Terminal Text Program", "C. Hyperlink Text Transfer Program", "D. High Transmission Tech Protocol", "E. Home Tool Transfer Protocol"], ans: "A" },
+      { id: 3, q: "Software yang berfungsi terus menyala menampung request HTTP dan melayani file website disebut...", options: ["A. Web Browser", "B. Operating System", "C. Web Server", "D. Text Editor", "E. DNS"], ans: "C" },
+      { id: 4, q: "Yang manakah berikut ini yang merupakan contoh dari Web Server yang populer?", options: ["A. Safari dan Opera", "B. Apache dan Nginx", "C. Word dan Excel", "D. MySQL dan Oracle", "E. VS Code dan Sublime"], ans: "B" },
+      { id: 5, q: "Port standar atau default yang digunakan untuk protokol HTTP (tanpa enkripsi) adalah...", options: ["A. Port 21", "B. Port 25", "C. Port 80", "D. Port 443", "E. Port 8080"], ans: "C" },
+      { id: 6, q: "Saat Anda mengakses sebuah web dan browser merespon dengan pesan '404 Not Found', artinya adalah...", options: ["A. Server meledak", "B. Internet Anda putus", "C. File atau URL yang diminta tidak ditemukan di server", "D. Anda belum login", "E. Website sukses dibuka"], ans: "C" },
+      { id: 7, q: "HTTP Status code yang menandakan Request dari klien sukses dan diterima oleh server (Success) adalah...", options: ["A. 200 OK", "B. 403 Forbidden", "C. 500 Internal Server Error", "D. 301 Moved Permanently", "E. 400 Bad Request"], ans: "A" },
+      { id: 8, q: "Bahasa markup utama yang digunakan untuk membuat kerangka struktur halaman website adalah...", options: ["A. PHP", "B. Python", "C. HTML", "D. C++", "E. Java"], ans: "C" },
+      { id: 9, q: "Bagian dari pengembangan web yang difokuskan pada apa yang dilihat dan berinteraksi langsung dengan pengguna (tampilan visual) disebut...", options: ["A. Back-End", "B. Front-End", "C. Database Admin", "D. Network Engineer", "E. Security Analyst"], ans: "B" },
+      { id: 10, q: "Bagian dari pengembangan web yang beroperasi di belakang layar (sisi server) untuk memproses logika bisnis dan database disebut...", options: ["A. Front-End", "B. Back-End", "C. UI Designer", "D. Web Client", "E. CSS Styler"], ans: "B" },
+      { id: 11, q: "HTTP Method yang paling sering digunakan oleh browser klien hanya untuk *mengambil* (membaca) data halaman web dari server adalah...", options: ["A. POST", "B. PUT", "C. DELETE", "D. GET", "E. UPDATE"], ans: "D" },
+      { id: 12, q: "Saat Anda mengisi form registrasi berisikan password rahasia, metode HTTP apa yang paling aman digunakan agar password tidak tampil di URL browser?", options: ["A. GET", "B. POST", "C. FETCH", "D. COPY", "E. LINK"], ans: "B" },
+      { id: 13, q: "Perbedaan utama website Statis dan Dinamis adalah...", options: ["A. Web statis warnanya hitam putih, dinamis berwarna", "B. Web statis isinya tetap, dinamis kontennya bisa berubah-ubah dan terhubung ke database", "C. Web statis gratis, dinamis berbayar", "D. Web statis tidak butuh browser", "E. Web statis dibuat dengan PHP"], ans: "B" },
+      { id: 14, q: "Bahasa pemrograman yang paling sering digunakan pada sisi server (Back-End) untuk membangun web dinamis adalah...", options: ["A. HTML", "B. CSS", "C. XML", "D. PHP", "E. JSON"], ans: "D" },
+      { id: 15, q: "Singkatan dari URL, yang merujuk pada alamat suatu sumber web, adalah...", options: ["A. Uniform Resource Locator", "B. Universal Route Link", "C. Unified Research Label", "D. Unique Range Line", "E. Undo Redo Locator"], ans: "A" },
+      { id: 16, q: "Ekstensi file standar untuk halaman dasar HTML adalah...", options: ["A. .txt atau .doc", "B. .html atau .htm", "C. .exe atau .bat", "D. .pdf", "E. .css"], ans: "B" },
+      { id: 17, q: "Tugas dari bahasa CSS (Cascading Style Sheets) dalam pengembangan website adalah...", options: ["A. Mengambil data dari database", "B. Menulis logika matematika dan kalkulator", "C. Memberikan gaya, warna, letak, dan desain visual pada HTML", "D. Menjalankan server lokal", "E. Mengamankan password"], ans: "C" },
+      { id: 18, q: "Aplikasi software yang digunakan untuk menyimpan, mengelola, dan mengolah data pengguna (misal: MySQL, PostgreSQL) disebut...", options: ["A. Compiler", "B. Text Editor", "C. Database (Basis Data)", "D. Web Browser", "E. Web Server"], ans: "C" },
+      { id: 19, q: "Untuk membuka tool *Developer Network Tab* secara umum pada browser seperti Google Chrome di Windows, tombol shortcut apa yang ditekan?", options: ["A. F1", "B. F5", "C. F12", "D. Alt+F4", "E. Ctrl+C"], ans: "C" },
+      { id: 20, q: "HTTP Status Code berawalan angka 5xx (misal: 500 Internal Server Error, 502 Bad Gateway) menandakan kesalahan terjadi pada pihak...", options: ["A. Web Browser", "B. Klien (Pengguna)", "C. Web Server (Back-end/Sistem Server)", "D. Kabel Mouse", "E. Monitor Klien"], ans: "C" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-blue-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-blue-600">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Tampilkan indikator loading pada tombol
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 01: Teknologi Aplikasi Web",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai konsep Arsitektur Client-Server, HTTP Request, dan Ekosistem Web.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali mengenai perbedaan Front-end, Back-end, dan Kode Status HTTP.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi kembali materi dasar arsitektur server dan client.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-blue-500";
+      if (type === "success") icon = "fa-circle-check text-emerald-500";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-500";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderTechStep(1);
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>

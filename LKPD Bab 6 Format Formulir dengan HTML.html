@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD Bab 6: Format Formulir dengan HTML</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+    
+    .grid-bg-pattern {
+      background-color: #f8fafc;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 16px 16px;
+    }
+
+    @keyframes pulse-code {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+      50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+    }
+    .hotspot-active { animation: pulse-code 1.8s infinite; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+          <i class="fa-solid fa-code text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD Bab 6: Format Formulir HTML</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Anatomi Form, Elemen Input, Select, & Textarea</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum HTML.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Form HTML -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Anatomi & Elemen Form HTML
+          </h2>
+          <span class="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2.5 py-1 rounded-full border border-slate-200">HTML5 Standards</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          <b>Formulir (Form)</b> pada halaman web digunakan untuk mengumpulkan data dari pengguna (seperti pendaftaran, login, dan survei) agar dapat diproses oleh server. Form dibungkus menggunakan tag <code>&lt;form&gt;</code> dan berisi berbagai elemen interaktif.
+        </p>
+
+        <!-- HTML Standards Table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden text-xs mb-5">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-slate-800 flex items-center justify-between">
+            <span><i class="fa-brands fa-html5 text-orange-600 mr-1.5"></i> Ringkasan Tag & Elemen Form</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/70 text-slate-700 font-semibold text-[11px]">
+                  <th class="p-2.5 border-b border-slate-200">Elemen / Tag</th>
+                  <th class="p-2.5 border-b border-slate-200">Fungsi Utama</th>
+                  <th class="p-2.5 border-b border-slate-200">Contoh Kode</th>
+                  <th class="p-2.5 border-b border-slate-200">Atribut Penting</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700 bg-white">
+                <tr>
+                  <td class="p-2.5 font-mono text-blue-700 font-bold">&lt;form&gt;</td>
+                  <td class="p-2.5">Membungkus seluruh elemen input.</td>
+                  <td class="p-2.5 font-mono text-[10px] bg-slate-50 p-1 rounded">&lt;form action="proses.php" method="POST"&gt;</td>
+                  <td class="p-2.5"><code>action</code> (tujuan), <code>method</code> (GET/POST)</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-mono text-blue-700 font-bold">&lt;input&gt;</td>
+                  <td class="p-2.5">Menerima data (teks, sandi, pilihan).</td>
+                  <td class="p-2.5 font-mono text-[10px] bg-slate-50 p-1 rounded">&lt;input type="text" name="username"&gt;</td>
+                  <td class="p-2.5"><code>type</code> (text, password, radio, dll), <code>name</code></td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-mono text-blue-700 font-bold">&lt;select&gt; & &lt;option&gt;</td>
+                  <td class="p-2.5">Membuat menu *dropdown* (pilihan tarik-turun).</td>
+                  <td class="p-2.5 font-mono text-[10px] bg-slate-50 p-1 rounded">&lt;select&gt;&lt;option&gt;Pilih&lt;/option&gt;&lt;/select&gt;</td>
+                  <td class="p-2.5"><code>name</code> (pada select), <code>value</code> (pada option)</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-mono text-blue-700 font-bold">&lt;textarea&gt;</td>
+                  <td class="p-2.5">Menerima input teks panjang / multibaris (pesan/alamat).</td>
+                  <td class="p-2.5 font-mono text-[10px] bg-slate-50 p-1 rounded">&lt;textarea rows="4" cols="50"&gt;&lt;/textarea&gt;</td>
+                  <td class="p-2.5"><code>rows</code>, <code>cols</code>, <code>placeholder</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+            <h4 class="font-bold text-blue-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-i-cursor text-blue-600"></i> Atribut Placeholder</h4>
+            <p class="text-blue-800">Teks bayangan abu-abu di dalam input sebagai petunjuk pengisian sementara.</p>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+            <h4 class="font-bold text-emerald-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-asterisk text-emerald-600"></i> Atribut Required</h4>
+            <p class="text-emerald-800">Memaksa pengguna untuk mengisi *field* tersebut (tidak boleh dikosongkan sebelum submit).</p>
+          </div>
+          <div class="bg-purple-50 border border-purple-200 rounded-xl p-3">
+            <h4 class="font-bold text-purple-900 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-tag text-purple-600"></i> Atribut Name & Value</h4>
+            <p class="text-purple-800"><code>name</code> untuk identitas variabel data, <code>value</code> untuk nilai yang akan dikirim ke server.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif Code HTML
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Analisis struktur form registrasi dan susun kerangka form survei pengguna.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">Interactive Code Lab</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Form Registrasi Akun -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-laptop-code text-blue-600"></i> Simulasi 1: Mapping Elemen Registrasi
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">5 Input Fields</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Klik tombol angka merah pada *wireframe* form pendaftaran untuk menentukan tag/atribut `<input>` yang tepat digunakan.</p>
+
+              <!-- Wireframe Interactive View -->
+              <div class="grid-bg-pattern border border-slate-300 rounded-xl p-5 relative mb-3 overflow-hidden font-mono text-sm shadow-inner">
+                <div class="font-bold text-center mb-4 border-b border-slate-300 pb-2">Form Pendaftaran Siswa</div>
+                
+                <div class="space-y-6 max-w-sm mx-auto">
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(0)" id="hp-0" class="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold text-xs flex items-center justify-center border-2 border-white shadow-md hotspot-active hover:scale-125 transition">1</button>
+                    <label class="block text-xs mb-1">Nama Lengkap:</label>
+                    <div class="w-full h-8 bg-white border border-slate-400 rounded px-2 flex items-center text-slate-400 text-xs">Masukkan nama...</div>
+                  </div>
+                  
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(1)" id="hp-1" class="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold text-xs flex items-center justify-center border-2 border-white shadow-md hotspot-active hover:scale-125 transition">2</button>
+                    <label class="block text-xs mb-1">Kata Sandi (Password):</label>
+                    <div class="w-full h-8 bg-white border border-slate-400 rounded px-2 flex items-center text-slate-900 text-xs tracking-widest">••••••••</div>
+                  </div>
+
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(2)" id="hp-2" class="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold text-xs flex items-center justify-center border-2 border-white shadow-md hotspot-active hover:scale-125 transition">3</button>
+                    <label class="block text-xs mb-1">Alamat Email:</label>
+                    <div class="w-full h-8 bg-white border border-slate-400 rounded px-2 flex items-center text-slate-400 text-xs">contoh@mail.com (Validasi @)</div>
+                  </div>
+
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(3)" id="hp-3" class="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold text-xs flex items-center justify-center border-2 border-white shadow-md hotspot-active hover:scale-125 transition">4</button>
+                    <label class="block text-xs mb-1">Jenis Kelamin (Pilih 1):</label>
+                    <div class="flex items-center gap-3 text-xs">
+                      <div class="w-3 h-3 rounded-full border border-slate-500 flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full"></div></div> Pria
+                      <div class="w-3 h-3 rounded-full border border-slate-500"></div> Wanita
+                    </div>
+                  </div>
+
+                  <div class="relative pl-8">
+                    <button onclick="inspectHotspot(4)" id="hp-4" class="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold text-xs flex items-center justify-center border-2 border-white shadow-md hotspot-active hover:scale-125 transition">5</button>
+                    <label class="block text-xs mb-1">Hobi (Bisa pilih >1):</label>
+                    <div class="flex items-center gap-3 text-xs">
+                      <div class="w-3 h-3 border border-slate-500 flex items-center justify-center"><i class="fa-solid fa-check text-[8px]"></i></div> Coding
+                      <div class="w-3 h-3 border border-slate-500"></div> Desain
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hotspot Inspector Detail Panel -->
+              <div id="sim1-detail-box" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2 mb-2 hidden">
+                <!-- JS Dynamic Content -->
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mt-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Klik angka 1-5 pada form untuk inspeksi.</span>
+              <button onclick="catatSimulasi(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-code"></i> Catat Tag
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Form Feedback & Survey (Kuis Keputusan Berantai) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-list-check text-orange-500"></i> Simulasi 2: Logika Form Survey
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-orange-100 text-orange-800 px-2 py-0.5 rounded border border-orange-200">Sequential Build</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">Bantu programmer membangun form *Feedback Survey*. Pilih tag & atribut secara berurutan!</p>
+
+              <!-- Decision Step Indicator Bar -->
+              <div class="flex items-center justify-between bg-slate-100 p-2 rounded-xl mb-3 text-[11px] font-bold text-slate-600">
+                <span id="step-lbl-1" class="px-2 py-1 bg-blue-500 text-white rounded-lg">1. Dropdown</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-2" class="px-2 py-1 rounded-lg">2. Isi Dropdown</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-3" class="px-2 py-1 rounded-lg">3. Teks Panjang</span>
+                <i class="fa-solid fa-angle-right text-slate-400"></i>
+                <span id="step-lbl-4" class="px-2 py-1 rounded-lg">4. Validasi</span>
+              </div>
+
+              <!-- Decision Card Box -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs mb-3">
+                <span class="text-[10px] font-bold text-orange-600 uppercase block mb-1" id="sim2-step-title">Langkah 1</span>
+                <p id="sim2-narrative" class="font-medium text-slate-900 leading-relaxed mb-3">
+                  Deskripsi skenario...
+                </p>
+
+                <div class="space-y-2" id="sim2-options-container">
+                  <!-- Dynamic JS Options -->
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Selesaikan 4 logika kode.</span>
+              <button onclick="catatSimulasi(2)" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Log
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan Praktikum -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Log Elemen HTML
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi tag dan atribut yang direkap otomatis dari simulasi.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Form</th>
+                <th class="px-4 py-3">Parameter / Elemen Form</th>
+                <th class="px-4 py-3">Identifikasi Tag & Atribut</th>
+                <th class="px-4 py-3">Status Validasi Code</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada kode terekam. Klik tombol "Catat" pada modul simulasi di atas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi K3LH -> HTML Form -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi Dasar Form HTML
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda berikut untuk menguji pemahaman sintaks form.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal Pilihan Ganda</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan tabel pengamatan telah terisi lengkap sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-blue-300">
+          <i class="fa-solid fa-laptop-code"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD HTML Berhasil Diselesaikan!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // DATA SISWA (Tetap dipertahankan dari versi original)
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const opt = document.getElementById('sel-nama');
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          opt.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // SIMULASI 1: MAPPING ELEMEN FORM REGISTRASI
+    const hotspotsData = [
+      {
+        id: 0,
+        title: "Field 1: Nama Lengkap",
+        hazard: "Mengambil input berupa karakter teks biasa (alfanumerik) pada satu baris tunggal.",
+        risk: "Atribut default untuk mengumpulkan teks pendek/nama.",
+        signsOptions: [
+          "A. <input type=\"text\">",
+          "B. <input type=\"name\">",
+          "C. <textarea>"
+        ],
+        correctSign: "A. <input type=\"text\">"
+      },
+      {
+        id: 1,
+        title: "Field 2: Kata Sandi (Password)",
+        hazard: "Karakter yang diketik harus disensor (berubah menjadi titik/bintang) demi keamanan.",
+        risk: "Mencegah orang lain mengintip sandi (Shoulder surfing).",
+        signsOptions: [
+          "A. <input type=\"hidden\">",
+          "B. <input type=\"password\">",
+          "C. <input type=\"secret\">"
+        ],
+        correctSign: "B. <input type=\"password\">"
+      },
+      {
+        id: 2,
+        title: "Field 3: Alamat Email",
+        hazard: "Membutuhkan validasi otomatis ketersediaan karakter '@' (at) dan domain (misal .com).",
+        risk: "Memastikan format email yang dikirim sudah benar sebelum form diproses.",
+        signsOptions: [
+          "A. <input type=\"text\"> dengan validasi JS",
+          "B. <input type=\"email\">",
+          "C. <input type=\"mail\">"
+        ],
+        correctSign: "B. <input type=\"email\">"
+      },
+      {
+        id: 3,
+        title: "Field 4: Jenis Kelamin (Pilihan Tunggal)",
+        hazard: "Hanya satu pilihan yang boleh aktif/dipilih (Pria ATAU Wanita), tidak bisa keduanya.",
+        risk: "Gunakan tipe input dan kelompokkan dengan atribut 'name' yang sama.",
+        signsOptions: [
+          "A. <input type=\"radio\">",
+          "B. <input type=\"checkbox\">",
+          "C. <select>"
+        ],
+        correctSign: "A. <input type=\"radio\">"
+      },
+      {
+        id: 4,
+        title: "Field 5: Hobi (Pilihan Jamak/Multi)",
+        hazard: "Boleh memilih lebih dari satu opsi (bisa dicentang banyak) secara bersamaan.",
+        risk: "Tipe ini berbentuk kotak (box) yang dapat dicentang.",
+        signsOptions: [
+          "A. <input type=\"radio\">",
+          "B. <input type=\"multi\">",
+          "C. <input type=\"checkbox\">"
+        ],
+        correctSign: "C. <input type=\"checkbox\">"
+      }
+    ];
+
+    let currentInspectIdx = 0;
+    let userSignSelections = {};
+
+    function inspectHotspot(idx) {
+      currentInspectIdx = idx;
+      const hp = hotspotsData[idx];
+      const box = document.getElementById('sim1-detail-box');
+      box.classList.remove('hidden');
+
+      let optionsHtml = '';
+      hp.signsOptions.forEach(opt => {
+        const isChecked = userSignSelections[idx] === opt ? 'checked' : '';
+        optionsHtml += `
+          <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition font-mono text-[11px]">
+            <input type="radio" name="hp_sign_${idx}" value="${opt.replace(/"/g, '&quot;')}" ${isChecked} onchange="selectSignForHp(${idx}, this.value)" class="accent-blue-600">
+            <span>${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
+          </label>
+        `;
+      });
+
+      box.innerHTML = `
+        <div class="border-b border-slate-200 pb-1.5 font-bold text-slate-900 flex justify-between items-center">
+          <span>${hp.title}</span>
+          <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-mono">inspect_element</span>
+        </div>
+        <p class="text-slate-700 mt-1"><b>Fungsi Field:</b> ${hp.hazard}</p>
+        <p class="text-slate-700"><b>Karakteristik:</b> ${hp.risk}</p>
+        <div class="pt-1">
+          <p class="font-bold text-slate-800 mb-1">Pilih Tag/Atribut HTML yang Tepat:</p>
+          <div class="space-y-1.5">${optionsHtml}</div>
+        </div>
+      `;
+
+      document.getElementById('sim1-status-text').innerText = `Memeriksa Elemen #${idx+1}. Tentukan kodenya.`;
+    }
+
+    function selectSignForHp(hpIdx, signVal) {
+      userSignSelections[hpIdx] = signVal;
+      showToast("Tag Dipilih", `Elemen #${hpIdx+1} telah dipasangkan kode.`, "info");
+    }
+
+    // SIMULASI 2: FORM SURVEY (BERANTAI)
+    let currentEvacStep = 1;
+    let evacChoices = {};
+
+    const evacStepsData = {
+      1: {
+        title: "Langkah 1: Membuat Menu Dropdown",
+        narrative: "Kita ingin membuat pilihan 'Tingkat Kepuasan' (Sangat Puas, Puas, Kecewa) yang ringkas dan tidak memakan ruang (dropdown). Tag HTML apa yang menjadi pembungkus utamanya?",
+        options: [
+          { label: "A. &lt;select&gt;", correct: true, feedback: "TEPAT! Tag <select> digunakan untuk membuat menu pilihan tarik-turun (dropdown)." },
+          { label: "B. &lt;dropdown&gt;", correct: false, feedback: "SALAH! Tidak ada tag <dropdown> pada HTML standar." },
+          { label: "C. &lt;input type=\"menu\"&gt;", correct: false, feedback: "SALAH! Tipe input menu tidak tersedia di HTML5." }
+        ]
+      },
+      2: {
+        title: "Langkah 2: Menambahkan Item di Dalam Dropdown",
+        narrative: "Menu dropdown sudah dibuat. Sekarang kita harus memasukkan pilihan-pilihannya ke dalam tag <select> tadi. Tag apa yang digunakan untuk setiap item pilihan?",
+        options: [
+          { label: "A. &lt;item&gt;", correct: false, feedback: "SALAH! Tag ini tidak valid untuk elemen dropdown HTML." },
+          { label: "B. &lt;list&gt;", correct: false, feedback: "SALAH! Tag untuk list biasanya <li>, bukan untuk dropdown." },
+          { label: "C. &lt;option&gt;", correct: true, feedback: "TEPAT! <option> digunakan untuk mendefinisikan item-item pilihan di dalam <select>." }
+        ]
+      },
+      3: {
+        title: "Langkah 3: Kotak Pesan / Saran Panjang",
+        narrative: "Pengguna diminta menuliskan 'Saran & Kritik' yang panjang (berparagraf-paragraf). Elemen mana yang paling tepat?",
+        options: [
+          { label: "A. &lt;input type=\"text\" maxlength=\"999\"&gt;", correct: false, feedback: "KURANG TEPAT! <input type='text'> hanya bisa untuk 1 baris, akan sangat menyulitkan membaca kalimat panjang." },
+          { label: "B. &lt;textarea&gt;", correct: true, feedback: "TEPAT! <textarea> memungkinkan pengguna mengetik multibaris yang dapat di-resize panjang lebarnya." },
+          { label: "C. &lt;longbox&gt;", correct: false, feedback: "SALAH! Tidak ada tag bernama <longbox>." }
+        ]
+      },
+      4: {
+        title: "Langkah 4: Validasi & Petunjuk Bayangan",
+        narrative: "Kita ingin memastikan field 'Saran' TIDAK BOLEH KOSONG saat dikirim, serta menampilkan tulisan abu-abu 'Ketik saran anda...' di dalamnya. Atribut apa yang digabungkan?",
+        options: [
+          { label: "A. Atribut required & placeholder", correct: true, feedback: "SANGAT TEPAT! required mewajibkan pengisian, placeholder memberikan teks hint bayangan." },
+          { label: "B. Atribut mandatory & hint", correct: false, feedback: "SALAH! Atribut ini tidak valid di standar HTML5." },
+          { label: "C. Atribut value & readonly", correct: false, feedback: "SALAH! value akan memberikan teks permanen, readonly malah membuat kotak tidak bisa diketik." }
+        ]
+      }
+    };
+
+    function renderEvacStep(step) {
+      currentEvacStep = step;
+      const data = evacStepsData[step];
+
+      document.getElementById('sim2-step-title').innerText = data.title;
+      document.getElementById('sim2-narrative').innerHTML = data.narrative;
+
+      for (let i = 1; i <= 4; i++) {
+        const lbl = document.getElementById(`step-lbl-${i}`);
+        if (i === step) lbl.className = "px-2 py-1 bg-orange-500 text-white rounded-lg";
+        else if (i < step) lbl.className = "px-2 py-1 bg-emerald-600 text-white rounded-lg";
+        else lbl.className = "px-2 py-1 bg-slate-200 text-slate-600 rounded-lg";
+      }
+
+      const container = document.getElementById('sim2-options-container');
+      container.innerHTML = '';
+
+      data.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 font-mono text-slate-800 transition text-xs shadow-2xs";
+        btn.innerHTML = opt.label;
+        btn.onclick = () => chooseEvacOption(step, idx, opt.correct, opt.feedback);
+        container.appendChild(btn);
+      });
+    }
+
+    function chooseEvacOption(step, optIdx, isCorrect, feedbackText) {
+      evacChoices[step] = { optIdx, isCorrect, feedbackText };
+
+      if (isCorrect) {
+        showToast("Kode Benar!", feedbackText, "success");
+        if (step < 4) {
+          renderEvacStep(step + 1);
+        } else {
+          document.getElementById('sim2-status-text').innerText = "Rantai Penyusunan Form SUKSES!";
+        }
+      } else {
+        showToast("Error / Tidak Valid!", feedbackText, "warning");
+      }
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        const hp = hotspotsData[currentInspectIdx];
+        const selectedSign = userSignSelections[currentInspectIdx];
+
+        if (!selectedSign) {
+          showToast("Pilih Kode", "Harap pilih opsi Tag HTML untuk elemen ini terlebih dahulu!", "warning");
+          return;
+        }
+
+        const isCorrect = selectedSign.replace(/&quot;/g, '"') === hp.correctSign;
+
+        logEntry = {
+          modul: "Simulasi 1: Registrasi Akun",
+          param: `${hp.title}`,
+          hasil: `${selectedSign.substring(0, 30).replace(/</g, "&lt;").replace(/>/g, "&gt;")}...`,
+          status: isCorrect ? "PASS (Valid HTML5)" : "ERROR (Kode Salah)"
+        };
+      } else if (simNum === 2) {
+        const step1Pass = evacChoices[1] && evacChoices[1].isCorrect;
+        const step2Pass = evacChoices[2] && evacChoices[2].isCorrect;
+        const step3Pass = evacChoices[3] && evacChoices[3].isCorrect;
+        const step4Pass = evacChoices[4] && evacChoices[4].isCorrect;
+
+        const allPass = step1Pass && step2Pass && step3Pass && step4Pass;
+
+        logEntry = {
+          modul: "Simulasi 2: Survey Form",
+          param: "Skenario Feedback (Select & Textarea)",
+          hasil: `Rantai Logika: Step 1-4 Evaluated`,
+          status: allPass ? "PASS (Valid HTML5)" : "ERROR (Sintaks Salah)"
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil pengamatan berhasil dimasukkan ke tabel.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada kode terekam. Klik tombol "Catat" pada modul simulasi di atas.</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        let badgeColor = "bg-emerald-100 text-emerald-800 border border-emerald-200";
+        if (row.status.includes("ERROR")) badgeColor = "bg-rose-100 text-rose-800 border border-rose-200";
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 font-mono-code text-slate-600">${row.param}</td>
+          <td class="px-4 py-3 font-mono-code font-bold text-slate-900">${row.hasil}</td>
+          <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeColor}">${row.status}</span></td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Form,Parameter / Elemen Form,Identifikasi Tag,Status Validasi\n";
+      tableData.forEach((d, i) => {
+        // Membersihkan tag HTML entitas agar rapi di CSV
+        let cleanHasil = d.hasil.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+        csvContent += `${i + 1},"${d.modul}","${d.param}","${cleanHasil}","${d.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "HTML_Form_LKPD_Data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil pengamatan terunduh.", "success");
+    }
+
+    // QUESTION BANK HTML FORM (20 SOAL)
+    const questionBankHTML = [
+      { id: 1, q: "Tag HTML yang bertugas sebagai pembungkus utama/kontainer bagi semua elemen formulir pendaftaran adalah...", options: ["A. <form>", "B. <input>", "C. <table>", "D. <body>", "E. <fieldset>"], ans: "A" },
+      { id: 2, q: "Atribut pada tag <form> yang berfungsi untuk menentukan URL/file tujuan tempat data akan dikirim atau diproses (misalnya proses.php) adalah...", options: ["A. method", "B. action", "C. name", "D. id", "E. src"], ans: "B" },
+      { id: 3, q: "Jika kita ingin mengirimkan data penting (seperti password) tanpa menampilkannya di *address bar* browser, metode pengiriman (method) yang wajib digunakan adalah...", options: ["A. method=\"GET\"", "B. method=\"POST\"", "C. method=\"SEND\"", "D. method=\"HIDDEN\"", "E. method=\"SECURE\""], ans: "B" },
+      { id: 4, q: "Untuk membuat kotak isian di mana pengguna dapat mengetikkan nama atau teks biasa 1 baris, kita menggunakan tag...", options: ["A. <input type=\"text\">", "B. <input type=\"name\">", "C. <input type=\"string\">", "D. <textarea>", "E. <textfield>"], ans: "A" },
+      { id: 5, q: "Saat membuat form login, karakter kata sandi yang diketik harus disamarkan menjadi bintang atau titik. Tipe input yang tepat adalah...", options: ["A. <input type=\"hidden\">", "B. <input type=\"text\" hidden>", "C. <input type=\"password\">", "D. <input type=\"secret\">", "E. <input type=\"auth\">"], ans: "C" },
+      { id: 6, q: "Tipe input HTML5 yang otomatis memvalidasi apakah pengguna memasukkan karakter '@' (at) dan format yang benar adalah...", options: ["A. <input type=\"mail\">", "B. <input type=\"email\">", "C. <input type=\"address\">", "D. <input type=\"text\" required>", "E. <input type=\"contact\">"], ans: "B" },
+      { id: 7, q: "Apabila kita ingin pengguna memilih **hanya satu** jenis kelamin (Pria/Wanita), tipe input yang tepat adalah...", options: ["A. <input type=\"checkbox\">", "B. <input type=\"radio\">", "C. <input type=\"single\">", "D. <input type=\"choice\">", "E. <input type=\"select\">"], ans: "B" },
+      { id: 8, q: "Apabila kita ingin pengguna dapat memilih **lebih dari satu** opsi (misalnya hobi: Membaca, Menulis, Coding), tipe input yang digunakan adalah...", options: ["A. <input type=\"radio\">", "B. <input type=\"multiple\">", "C. <input type=\"checkbox\">", "D. <input type=\"multi\">", "E. <input type=\"box\">"], ans: "C" },
+      { id: 9, q: "Tag HTML yang digunakan untuk membuat menu *dropdown* (daftar tarik-turun) adalah...", options: ["A. <dropdown>", "B. <menu>", "C. <list>", "D. <select>", "E. <input type=\"dropdown\">"], ans: "D" },
+      { id: 10, q: "Setiap pilihan/item di dalam tag <select> (dropdown) harus dibungkus menggunakan tag...", options: ["A. <li>", "B. <item>", "C. <opt>", "D. <option>", "E. <choice>"], ans: "D" },
+      { id: 11, q: "Untuk membuat kotak input teks panjang/multibaris (seperti alamat lengkap atau pesan saran), tag yang digunakan adalah...", options: ["A. <input type=\"longtext\">", "B. <input type=\"textarea\">", "C. <textarea>", "D. <textbox>", "E. <message>"], ans: "C" },
+      { id: 12, q: "Atribut HTML5 yang ditambahkan pada tag <input> agar isian tersebut **wajib diisi** (tidak boleh kosong saat di-submit) adalah...", options: ["A. mandatory", "B. required", "C. important", "D. validate", "E. must-fill"], ans: "B" },
+      { id: 13, q: "Atribut yang digunakan untuk menampilkan teks petunjuk bayangan abu-abu di dalam kotak input (misal: 'Ketik nama anda di sini...') adalah...", options: ["A. value", "B. hint", "C. placeholder", "D. tooltip", "E. label"], ans: "C" },
+      { id: 14, q: "Untuk membuat input kalender (pemilihan tanggal lahir), tipe input HTML5 yang digunakan adalah...", options: ["A. <input type=\"time\">", "B. <input type=\"calendar\">", "C. <input type=\"date\">", "D. <input type=\"day\">", "E. <input type=\"datetime\">"], ans: "C" },
+      { id: 15, q: "Fungsi dari atribut 'value' pada elemen <input type=\"radio\"> atau <option> adalah...", options: ["A. Menampilkan teks di layar", "B. Menentukan nilai data sesungguhnya yang akan dikirim ke server jika opsi itu dipilih", "C. Memberi ID pada elemen tersebut", "D. Membuat elemen wajib diisi", "E. Mengubah warna tombol radio"], ans: "B" },
+      { id: 16, q: "Tipe tombol (button) yang secara spesifik berfungsi untuk mengirimkan semua data di dalam form ke server adalah...", options: ["A. <input type=\"send\">", "B. <input type=\"submit\">", "C. <input type=\"go\">", "D. <input type=\"action\">", "E. <input type=\"button\">"], ans: "B" },
+      { id: 17, q: "Tombol yang berfungsi untuk menghapus seluruh isian yang sudah diketik dan mengembalikannya ke keadaan semula (kosong) adalah...", options: ["A. <input type=\"clear\">", "B. <input type=\"delete\">", "C. <input type=\"remove\">", "D. <input type=\"reset\">", "E. <input type=\"refresh\">"], ans: "D" },
+      { id: 18, q: "Tag <label> dalam form biasanya digunakan untuk...", options: ["A. Membuat garis tepi form", "B. Memberikan teks keterangan/judul yang menempel dan terhubung ke elemen input tertentu", "C. Menandai form error", "D. Membuat form transparan", "E. Mengirim data rahasia"], ans: "B" },
+      { id: 19, q: "Atribut 'name' pada elemen <input> sangat penting karena...", options: ["A. Menjadi identifier variabel data saat dikirim dan diterima oleh server", "B. Menentukan jenis gaya CSS", "C. Menampilkan nama pengguna", "D. Membuat input menjadi lebih besar", "E. Mencegah error HTML"], ans: "A" },
+      { id: 20, q: "Perbedaan visual utama jika kita menggunakan form ber-atribut method=\"GET\" dibandingkan POST adalah...", options: ["A. Form GET ukurannya lebih kecil", "B. Form GET menampilkan data yang dikirim di ujung URL address bar browser", "C. Form POST menampilkan data di URL browser", "D. Form GET selalu error di Chrome", "E. Form GET lebih lambat"], ans: "B" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankHTML.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          // Clean HTML for display
+          let cleanOpt = opt.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-blue-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-blue-600">
+              <span class="font-mono">${cleanOpt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Tampilkan indikator loading pada tombol
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankHTML.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankHTML.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      // Payload disesuaikan persis dengan parameter data di Google Apps Script doPost(e)
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 06: Format Formulir HTML",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke Google Apps Script!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke Apps Script.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai tag form, input, select, textarea, dan atribut-atributnya.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali tipe input dan cara kerja select & option.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi materi anatomi form HTML dan atribut validasi.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-blue-500";
+      if (type === "success") icon = "fa-circle-check text-emerald-500";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-500";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderEvacStep(1);
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>
