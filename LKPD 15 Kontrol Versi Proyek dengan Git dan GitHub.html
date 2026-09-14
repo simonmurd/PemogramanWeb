@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 15: Kontrol Versi Proyek dengan Git dan GitHub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2.5 rounded-xl text-white">
+          <i class="fa-brands fa-git-alt text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 15: Kontrol Versi Proyek dengan Git dan GitHub</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Menerapkan sistem pelacakan versi kode (version control) dalam alur kerja pengembangan web</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Kontrol Versi Git & GitHub -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Kontrol Versi Proyek dengan Git dan GitHub
+          </h2>
+          <span class="text-[11px] bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-1 rounded-full border border-indigo-200">Bab 15: Git & GitHub</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          <strong>Version Control System (VCS)</strong> seperti <strong>Git</strong> memungkinkan pengembang melacak setiap revisi kode secara terstruktur, mengembalikan versi terdahulu jika terjadi kesalahan, serta bekerja pada cabang terisolasi (<em>branching</em>). Platform terpusat seperti <strong>GitHub</strong> melengkapi alur kerja ini dengan menyediakan repositori cloud, fitur integrasi tim, peninjauan kode melalui <strong>Pull Request (PR)</strong>, serta penyelarasan berkas lewat perintah <code>push</code> dan <code>pull</code>.
+        </p>
+
+        <!-- Teori Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-terminal text-indigo-600"></i> Perintah Dasar Git (Local Workflow)</h4>
+            <p class="text-slate-600 mb-2">Proses pelacakan kode lokal melalui 3 area: Working Directory, Staging Area, dan Commit History.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              git init<br>
+              git add index.html<br>
+              git commit -m "feat: tambah struktur HTML"
+            </div>
+          </div>
+          
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-code-branch text-indigo-600"></i> Percabangan (Branching) Kode</h4>
+            <p class="text-slate-600 mb-2">Membuat jalur pengembangan terisolasi agar fitur baru dapat diuji tanpa mengganggu kode utama (<em>main</em>).</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              git branch feature-x<br>
+              git checkout feature-x<br>
+              git merge feature-x
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-brands fa-github text-indigo-600"></i> Remote Repository di GitHub</h4>
+            <p class="text-slate-600 mb-2">Menghubungkan repositori lokal ke server GitHub untuk mengunggah dan mengunduh pembaruan berkas.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              git remote add origin https://github.com/user/repo.git<br>
+              git push -u origin main<br>
+              git pull origin main
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-users text-indigo-600"></i> Kolaborasi Tim & Pull Request (PR)</h4>
+            <p class="text-slate-600 mb-2">Mekanisme penggabungan kode tim di GitHub yang dilengkapi tinjauan kode (<em>code review</em>) sebelum disatukan ke branch utama.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              1. Push branch feature ke GitHub<br>
+              2. Open Pull Request (PR) di web GitHub<br>
+              3. Review & Merge Pull Request
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif Git CLI & GitHub
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Praktikum eksekusi perintah CLI Git lokal, pengelolaan cabang (branching), serta alur kerja kolaborasi GitHub.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">2 Skenario</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Local Repository Management (Flow Commit & Branching) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-terminal text-indigo-600"></i> Simulasi 1: Local Repo & Branching
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">Git CLI Local</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Jalankan tahapan CLI Git secara berurutan untuk melacak revisi kode lokal, menyimpan commit snapshot, dan membuat cabang fitur baru secara terisolasi.</p>
+
+              <!-- UI Interactive Terminal Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-3">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <button onclick="runSimulasi1Action('init')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition">git init</button>
+                  <button onclick="runSimulasi1Action('add')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition">git add .</button>
+                  <button onclick="runSimulasi1Action('commit')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition">git commit</button>
+                  <button onclick="runSimulasi1Action('branch')" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition">git branch feature-x</button>
+                  <button onclick="runSimulasi1Action('checkout')" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition">git checkout feature-x</button>
+                  <button onclick="runSimulasi1Action('status')" class="bg-slate-700 hover:bg-slate-800 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition">git status</button>
+                </div>
+
+                <!-- Simulated CLI Output Window -->
+                <div class="bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono-code text-[11px] min-h-[130px] overflow-x-auto shadow-inner" id="sim1-cli-output">
+                  <span class="text-slate-500">// Terminal Siap. Klik tombol perintah CLI di atas untuk memulai simulasi...</span>
+                </div>
+
+                <!-- Visual State Indicator -->
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs flex justify-between items-center" id="sim1-tree-state">
+                  <span class="text-slate-500">Cabang Aktif: <strong class="text-slate-800" id="sim1-current-branch">-</strong></span>
+                  <span class="text-slate-500">Total Commit: <strong class="text-slate-800" id="sim1-commit-count">0</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mt-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Silakan eksekusi perintah Git lokal.</span>
+              <button onclick="catatSimulasi(1)" id="btn-catat-1" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil Local Git
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Collaborative Workflow (Push, Pull, & Pull Request) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-brands fa-github text-indigo-600"></i> Simulasi 2: GitHub Collaborative Workflow
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">Push, Pull & PR</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Simulasikan pengoreksian & pengunggahan kode ke GitHub terpusat, sinkronisasi pembaruan tim via <code>git pull</code>, serta penggabungan Pull Request (PR).</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="runSimulasi2Action('remote')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-link"></i> 1. Remote Add
+                  </button>
+                  <button onclick="runSimulasi2Action('push')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> 2. Push Kode
+                  </button>
+                  <button onclick="runSimulasi2Action('pull')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> 3. Pull Updates
+                  </button>
+                  <button onclick="runSimulasi2Action('pr')" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-code-pull-request"></i> 4. Merge PR
+                  </button>
+                </div>
+
+                <!-- Live Result Display Container -->
+                <div id="sim2-remote-container" class="p-4 bg-white rounded-xl border border-slate-200 min-h-[130px] flex flex-col justify-center items-center text-center">
+                  <i class="fa-brands fa-github text-slate-300 text-3xl mb-2"></i>
+                  <span class="text-xs text-slate-400 italic">Pilih alur remote GitHub di atas untuk mensimulasikan sinkronisasi kode.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center mt-2">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Uji alur kolaborasi repositori GitHub.</span>
+              <button onclick="catatSimulasi(2)" id="btn-catat-2" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil Remote GitHub
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi hasil eksekusi simulasi Git lokal, manajemen branch, push remote, pull, dan Pull Request GitHub.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Perintah Git / Akses GitHub</th>
+                <th class="px-4 py-3">Kondisi / Parameter Branch</th>
+                <th class="px-4 py-3">Hasil Eksekusi / Output Repositori</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi: Git & GitHub
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda terkait sistem kontrol versi, CLI Git, branching, remote GitHub, dan Pull Request.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal PG</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan simulasi telah dikerjakan sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-indigo-100 text-indigo-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-indigo-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // URL Web App Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // State Local Git Repo Simulation
+    let isGitInit = false;
+    let isStaged = false;
+    let currentBranch = "main";
+    let commitCount = 0;
+    let lastSim1Log = { cmd: "", branch: "-", result: "" };
+
+    // State GitHub Remote Simulation
+    let isRemoteConnected = false;
+    let isPushed = false;
+    let lastSim2Log = { cmd: "", remote: "-", status: "" };
+
+    // [DATA CSV SISWA]
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          selNama.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // --- LOGIKA SIMULASI 1: GIT CLI LOCAL WORKFLOW ---
+    function runSimulasi1Action(act) {
+      const cliOut = document.getElementById('sim1-cli-output');
+      const currentBranchEl = document.getElementById('sim1-current-branch');
+      const commitCountEl = document.getElementById('sim1-commit-count');
+      const statusText = document.getElementById('sim1-status-text');
+
+      let outText = "";
+
+      if (act === 'init') {
+        isGitInit = true;
+        outText = "$ git init\nInitialized empty Git repository in /project-web/.git/";
+        lastSim1Log = { cmd: "git init", branch: currentBranch, result: "Inisialisasi repo kosong berhasil" };
+        showToast("Git Init", "Repositori Git lokal berhasil diinisialisasi.", "success");
+      } 
+      else if (act === 'add') {
+        if (!isGitInit) {
+          showToast("Error CLI", "Jalankan 'git init' terlebih dahulu!", "warning");
+          cliOut.innerText = "fatal: not a git repository (or any of the parent directories): .git";
+          return;
+        }
+        isStaged = true;
+        outText = "$ git add .\n[Staging Area] index.html & style.css ditambahkan ke staging area.";
+        lastSim1Log = { cmd: "git add .", branch: currentBranch, result: "Berkas masuk Staging Area" };
+        showToast("Git Add", "Berkas dipindahkan ke Staging Area.", "success");
+      }
+      else if (act === 'commit') {
+        if (!isStaged) {
+          showToast("Error CLI", "Tidak ada file di staging area. Jalankan 'git add' dulu!", "warning");
+          cliOut.innerText = "no changes added to commit (use \"git add\" and/or \"git commit -a\")";
+          return;
+        }
+        commitCount++;
+        isStaged = false;
+        outText = `$ git commit -m "feat: revisi tampilan web"\n[${currentBranch} commit-#00${commitCount}] feat: revisi tampilan web\n 2 files changed, 45 insertions(+)`;
+        lastSim1Log = { cmd: 'git commit -m "..."', branch: currentBranch, result: `Snapshot commit-#00${commitCount} tersimpan` };
+        showToast("Git Commit", "Snapshot perubahan berhasil disimpan ke histori.", "success");
+      }
+      else if (act === 'branch') {
+        if (!isGitInit) {
+          showToast("Error CLI", "Inisialisasi repo dengan 'git init' terlebih dahulu!", "warning");
+          return;
+        }
+        outText = "$ git branch feature-x\nCabang terisolasi 'feature-x' berhasil dibuat.";
+        lastSim1Log = { cmd: "git branch feature-x", branch: currentBranch, result: "Branch 'feature-x' dibuat" };
+        showToast("Git Branch", "Cabang 'feature-x' berhasil dibuat.", "success");
+      }
+      else if (act === 'checkout') {
+        if (!isGitInit) {
+          showToast("Error CLI", "Inisialisasi repo dengan 'git init' terlebih dahulu!", "warning");
+          return;
+        }
+        currentBranch = "feature-x";
+        outText = "$ git checkout feature-x\nSwitched to branch 'feature-x'";
+        lastSim1Log = { cmd: "git checkout feature-x", branch: currentBranch, result: "Berpindah ke branch 'feature-x'" };
+        showToast("Git Checkout", "Aktif di cabang feature-x.", "success");
+      }
+      else if (act === 'status') {
+        if (!isGitInit) {
+          outText = "fatal: not a git repository (or any of the parent directories): .git";
+        } else {
+          outText = `$ git status\nOn branch ${currentBranch}\n` + (isStaged ? "Changes to be committed: index.html" : "nothing to commit, working tree clean");
+        }
+        lastSim1Log = { cmd: "git status", branch: currentBranch, result: "Mengecek status working tree" };
+      }
+
+      cliOut.innerText = outText;
+      currentBranchEl.innerText = currentBranch;
+      commitCountEl.innerText = commitCount;
+      statusText.innerText = `Terakhir dieksekusi: ${act}`;
+    }
+
+    // --- LOGIKA SIMULASI 2: GITHUB COLLABORATIVE WORKFLOW ---
+    function runSimulasi2Action(act) {
+      const container = document.getElementById('sim2-remote-container');
+      const statusText = document.getElementById('sim2-status-text');
+
+      if (act === 'remote') {
+        isRemoteConnected = true;
+        container.innerHTML = `
+          <div class="text-left w-full bg-slate-50 border border-slate-200 p-3 rounded-xl">
+            <span class="text-[10px] font-bold tracking-widest text-indigo-600 uppercase bg-indigo-100 px-2 py-0.5 rounded border border-indigo-200">Remote Terhubung</span>
+            <p class="text-xs font-mono font-bold text-slate-800 mt-2">origin -> https://github.com/siswa/proyek-web.git</p>
+            <p class="text-[11px] text-slate-500 mt-1">Repositori lokal berhasil ditautkan ke GitHub remote.</p>
+          </div>
+        `;
+        lastSim2Log = { cmd: "git remote add origin", remote: "github.com/siswa/proyek-web", status: "Remote Ditautkan" };
+        statusText.innerText = "Remote GitHub berhasil dikonfigurasi!";
+        showToast("Remote Connected", "Repositori terhubung ke GitHub.", "success");
+      }
+      else if (act === 'push') {
+        if (!isRemoteConnected) {
+          showToast("Error Remote", "Hubungkan remote repo dahulu dengan step 1!", "warning");
+          return;
+        }
+        isPushed = true;
+        container.innerHTML = `
+          <div class="text-left w-full bg-indigo-50 border border-indigo-200 p-3 rounded-xl text-indigo-950">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-800 mb-1">
+              <i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i> Git Push Successful
+            </div>
+            <p class="text-xs font-mono text-slate-700">Enumerating objects: 5, done.<br>To https://github.com/siswa/proyek-web.git<br> * [new branch] main -> main</p>
+          </div>
+        `;
+        lastSim2Log = { cmd: "git push -u origin main", remote: "github.com/siswa/proyek-web", status: "Commit Terunggah ke GitHub" };
+        statusText.innerText = "Kode berhasil di-push ke GitHub!";
+        showToast("Git Push", "Commit terunggah ke Cloud GitHub.", "success");
+      }
+      else if (act === 'pull') {
+        if (!isRemoteConnected) {
+          showToast("Error Remote", "Hubungkan remote repo dahulu!", "warning");
+          return;
+        }
+        container.innerHTML = `
+          <div class="text-left w-full bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-emerald-950">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-800 mb-1">
+              <i class="fa-solid fa-cloud-arrow-down text-emerald-600"></i> Git Pull Synchronized
+            </div>
+            <p class="text-xs font-mono text-slate-700">Updating 1a2b3c..4d5e6f<br>Fast-forward<br> team-updates.js | 12 ++++++++++++</p>
+          </div>
+        `;
+        lastSim2Log = { cmd: "git pull origin main", remote: "github.com/siswa/proyek-web", status: "Kode Tim Tersinkronisasi" };
+        statusText.innerText = "Pembaruan dari tim berhasil di-pull!";
+        showToast("Git Pull", "Repositori lokal diperbarui dari remote.", "success");
+      }
+      else if (act === 'pr') {
+        if (!isPushed) {
+          showToast("Error PR", "Push branch fitur Anda ke GitHub terlebih dahulu!", "warning");
+          return;
+        }
+        container.innerHTML = `
+          <div class="text-left w-full bg-purple-50 border border-purple-200 p-3 rounded-xl text-purple-950">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-purple-800 mb-1">
+              <i class="fa-solid fa-code-pull-request text-purple-600"></i> Pull Request #1 Merged
+            </div>
+            <p class="text-xs text-slate-700"><strong>PR Title:</strong> Add new navigation component<br>Status: <span class="bg-purple-200 text-purple-900 font-bold px-2 py-0.5 rounded text-[10px]">Merged into main</span></p>
+          </div>
+        `;
+        lastSim2Log = { cmd: "Pull Request Merge (GitHub UI)", remote: "github.com/siswa/proyek-web", status: "PR Merged via Code Review" };
+        statusText.innerText = "Pull Request berhasil disetujui & digabung!";
+        showToast("PR Merged", "Fitur berhasil digabungkan ke cabang utama.", "success");
+      }
+    }
+
+    // RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        if (!lastSim1Log.cmd) {
+          showToast("Perhatian", "Jalankan Simulasi 1 CLI Git terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 1: Local Repo & Branching",
+          fitur: lastSim1Log.cmd,
+          input: `Branch: ${lastSim1Log.branch}`,
+          output: lastSim1Log.result
+        };
+      } else if (simNum === 2) {
+        if (!lastSim2Log.cmd) {
+          showToast("Perhatian", "Jalankan Simulasi 2 Collaborative GitHub terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 2: GitHub Collaborative Workflow",
+          fitur: lastSim2Log.cmd,
+          input: `Remote: ${lastSim2Log.remote}`,
+          output: lastSim2Log.status
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil simulasi dipindahkan ke tabel pengamatan.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 text-[11px] font-mono text-indigo-700 bg-slate-50 rounded truncate max-w-[180px]">${row.fitur}</td>
+          <td class="px-4 py-3 text-slate-700 italic">${row.input}</td>
+          <td class="px-4 py-3 font-bold text-slate-900">${row.output}</td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Perintah Git/Akses,Kondisi Parameter,Hasil Eksekusi Output\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.fitur}","${d.input}","${d.output}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "LKPD15_Git_GitHub_Pengamatan.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil praktikum terunduh.", "success");
+    }
+
+    // QUESTION BANK LKPD 15 (20 SOAL PG - Git & GitHub)
+    const questionBankWeb = [
+      { id: 1, q: "Apa fungsi utama dari Version Control System (VCS) seperti Git dalam proyek pengembangan web?", options: ["A. Membuat gambar desain tata letak otomatis", "B. Melacak setiap riwayat perubahan berkas kode dan memudahkan kolaborasi tim", "C. Mempercepat koneksi jaringan server web", "D. Mengenkripsi basis data MySQL secara otomatis", "E. Menggantikan peran bahasa pemrograman JavaScript"], ans: "B" },
+      { id: 2, q: "Perintah CLI Git yang digunakan untuk menginisialisasi repositori Git lokal baru pada folder proyek adalah...", options: ["A. git start", "B. git create", "C. git init", "D. git new", "E. git setup"], ans: "C" },
+      { id: 3, q: "Area sementara tempat berkas ditandai sebelum disimpan ke dalam snapshot riwayat commit dinamakan...", options: ["A. Working Directory", "B. Staging Area (Index)", "C. Remote Repository", "D. Trash Bin", "E. Commit Area"], ans: "B" },
+      { id: 4, q: "Perintah Git yang digunakan untuk memindahkan berkas 'index.html' dari Working Directory ke Staging Area adalah...", options: ["A. git commit index.html", "B. git push index.html", "C. git add index.html", "D. git stage index.html", "E. git save index.html"], ans: "C" },
+      { id: 5, q: "Perintah yang tepat untuk menyimpan snapshot permanen dari berkas di Staging Area disertai pesan riwayat adalah...", options: ["A. git commit -m \"pesan revisi\"", "B. git save -m \"pesan revisi\"", "C. git push -m \"pesan revisi\"", "D. git add -m \"pesan revisi\"", "E. git log -m \"pesan revisi\""], ans: "A" },
+      { id: 6, q: "Perintah Git yang digunakan untuk melihat status pelacakan berkas (untracked, modified, staged) saat ini adalah...", options: ["A. git log", "B. git status", "C. git check", "D. git show", "E. git info"], ans: "B" },
+      { id: 7, q: "Untuk melihat daftar riwayat commit yang telah dilakukan dalam repositori lokal beserta ID Hash-nya, kita menggunakan...", options: ["A. git status", "B. git log", "C. git branch", "D. git remote", "E. git history"], ans: "B" },
+      { id: 8, q: "Tujuan utama membuat percabangan (branch) baru saat mengembangkan fitur baru adalah...", options: ["A. Mengompresi ukuran berkas proyek", "B. Mengisolasi pengembangan fitur agar tidak merusak kode utama (main) yang sudah stabil", "C. Mempercepat proses kompilasi kode", "D. Menghapus riwayat commit lama", "E. Mengunggah kode langsung ke hosting"], ans: "B" },
+      { id: 9, q: "Perintah Git yang digunakan untuk membuat cabang baru bernama 'feature-login' adalah...", options: ["A. git branch feature-login", "B. git create feature-login", "C. git checkout -b feature-login", "D. Jawaban A dan C benar", "E. git new-branch feature-login"], ans: "D" },
+      { id: 10, q: "Perintah yang digunakan untuk berpindah dari cabang aktif ke cabang 'feature-login' adalah...", options: ["A. git switch feature-login", "B. git checkout feature-login", "C. git move feature-login", "D. Jawaban A dan B benar", "E. git jump feature-login"], ans: "D" },
+      { id: 11, q: "Perintah yang digunakan untuk menggabungkan kode dari cabang fitur kembali ke cabang utama (main) adalah...", options: ["A. git merge", "B. git combine", "C. git join", "D. git connect", "E. git attach"], ans: "A" },
+      { id: 12, q: "Kondisi di mana Git tidak dapat menggabungkan dua cabang secara otomatis karena terdapat perbedaan kode pada baris yang sama dinamakan...", options: ["A. Merge Crash", "B. Merge Conflict", "C. Fatal Error", "D. Staging Block", "E. Remote Rejection"], ans: "B" },
+      { id: 13, q: "Platform berbasis cloud terpusat yang digunakan untuk menyimpan dan mengelola repositori Git secara daring adalah...", options: ["A. GitHub", "B. VS Code", "C. Node.js", "D. Apache", "E. Composer"], ans: "A" },
+      { id: 14, q: "Perintah untuk menambahkan tautan repositori remote GitHub ke repositori lokal dengan alias 'origin' adalah...", options: ["A. git remote add origin <URL>", "B. git connect origin <URL>", "C. git link github <URL>", "D. git push remote <URL>", "E. git set-url origin <URL>"], ans: "A" },
+      { id: 15, q: "Perintah CLI yang digunakan untuk mengunggah commit dari repositori lokal ke repositori remote di GitHub adalah...", options: ["A. git pull", "B. git push", "C. git clone", "D. git fetch", "E. git export"], ans: "B" },
+      { id: 16, q: "Perintah yang digunakan untuk mengunduh sekaligus menggabungkan pembaruan terbaru dari repositori remote ke repositori lokal adalah...", options: ["A. git push", "B. git pull", "C. git clone", "D. git fetch", "E. git sync"], ans: "B" },
+      { id: 17, q: "Perintah untuk menduplikasi seluruh repositori dari remote GitHub ke komputer lokal untuk pertama kali dinamakan...", options: ["A. git clone <URL>", "B. git copy <URL>", "C. git download <URL>", "D. git get <URL>", "E. git duplicate <URL>"], ans: "A" },
+      { id: 18, q: "Mekanisme pada GitHub yang digunakan oleh pengembang untuk mengajukan usulan penggabungan kode dan meminta tinjauan kode (code review) dinamakan...", options: ["A. Commit Request", "B. Pull Request (PR)", "C. Merge Proposal", "D. Branch Request", "E. Code Review Request"], ans: "B" },
+      { id: 19, q: "File khusus yang digunakan untuk mendaftar berkas atau folder yang TIDAK boleh dilacak oleh Git (seperti node_modules/ atau .env) bernama...", options: ["A. .gitconfig", "B. .gitignore", "C. .gitkeep", "D. .envignore", "E. README.md"], ans: "B" },
+      { id: 20, q: "Perbedaan utama antara perintah 'git fetch' dan 'git pull' adalah...", options: ["A. git fetch mengunduh data tanpa langsung mengabungkannya (merge), sedangkan git pull langsung mengunduh dan menggabungkan", "B. git fetch hanya dapat digunakan untuk file gambar", "C. git pull tidak membutuhkan koneksi internet", "D. git fetch menghapus berkas lokal", "E. Tidak ada perbedaan antara keduanya"], ans: "A" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-indigo-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-indigo-600">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-indigo-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 15: Kontrol Versi Proyek dengan Git dan GitHub",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai konsep dasar Git CLI, percabangan (branching), remote push/pull, serta kolaborasi via Pull Request GitHub.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali mengenai perbedaan staging area, commit, serta alur kolaborasi remote repository.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi materi perintah CLI Git dasar dan alur kerja Pull Request GitHub.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-indigo-400";
+      if (type === "success") icon = "fa-circle-check text-emerald-400";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-400";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Inisialisasi Saat Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>

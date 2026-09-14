@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 16: Hosting, Domain, dan Deployment Halaman Web</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2.5 rounded-xl text-white">
+          <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 16: Hosting, Domain, dan Deployment Halaman Web</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Menerapkan prosedur peluncuran (deployment) situs web interaktif ke server publik dan pengujian performa web</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Hosting, Domain, & Deployment -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Hosting, Domain, dan Deployment Halaman Web
+          </h2>
+          <span class="text-[11px] bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-1 rounded-full border border-indigo-200">Bab 16: Deployment & Performance</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          <strong>Peluncuran Situs Web (Deployment)</strong> adalah proses mentransfer proyek berkas statis (HTML, CSS, JS) dari komputer lokal ke server publik agar dapat diakses pengguna di seluruh dunia. Konsep utama mencakup <strong>Web Hosting</strong> (ruang penyimpanan berkas di server), <strong>Domain Name System (DNS)</strong> (pengalamatan teks seperti <code>sekolah.sch.id</code>), alur integrasi CI/CD otomatis via platform modern (<strong>GitHub Pages, Vercel, Netlify</strong>), serta pengujian kualitas situs web melalui pengujian performa (<strong>Google Lighthouse Audit</strong>) dan keterbacaan di berbagai browser (*cross-browser testing*).
+        </p>
+
+        <!-- Teori Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-server text-indigo-600"></i> Domain & Web Hosting</h4>
+            <p class="text-slate-600 mb-2">Web Hosting menyimpan aset situs web, sedangkan DNS memetakan alamat IP server yang rumit menjadi nama domain human-readable (TLD: .com, .id, .net).</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              Domain: www.proyek-siswa.com<br>
+              IP Server: 76.76.21.21<br>
+              DNS Record: A Record -> IP Hosting
+            </div>
+          </div>
+          
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-rocket text-indigo-600"></i> Automated Deployment (CI/CD)</h4>
+            <p class="text-slate-600 mb-2">Platform Cloud modern terhubung langsung ke repositori Git. Setiap pembaruan kode yang di-<code>push</code> akan di-build dan di-deploy secara publik secara otomatis.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              Git Commit & Push -> Webhook Trigger<br>
+              Automated Build -> Production URL<br>
+              Active Live SSL/HTTPS
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-gauge-high text-indigo-600"></i> Audit Performa Google Lighthouse</h4>
+            <p class="text-slate-600 mb-2">Perkakas Chrome DevTools untuk mengukur 4 pilar utama situs web: <em>Performance</em>, <em>Accessibility</em>, <em>Best Practices</em>, dan <em>SEO</em>.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              - Performance: FCP, LCP, CLS<br>
+              - Accessibility: Alt Text, Color Contrast<br>
+              - SEO: Meta Description, Title Tag
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-laptop-code text-indigo-600"></i> Optimasi Kode & Cross-Browser</h4>
+            <p class="text-slate-600 mb-2">Meningkatkan kecepatan web melalui minifikasi berkas CSS/JS, kompresi format gambar WebP, dan pengujian konsistensi lintas peramban web.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              1. Kompresi Gambar: JPG/PNG -> WebP<br>
+              2. Minify CSS/JS: Hapus whitespace<br>
+              3. Responsive View: Viewport Test
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif Deployment & Performance Audit
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Praktikum peluncuran web statis ke platform cloud (GitHub Pages / Vercel / Netlify) dan audit performa menggunakan Google Lighthouse.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">2 Skenario</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Automated Deployment via GitHub Pages / Vercel -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i> Simulasi 1: Automated Deployment
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">Cloud Hosting</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Simulasikan menghubungkan repositori GitHub yang berisi berkas <code>index.html</code> ke penyedia hosting publik hingga menghasilkan URL domain aktif.</p>
+
+              <!-- UI Interactive Terminal Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-3">
+                <div class="grid grid-cols-2 sm:grid-cols-2 gap-2">
+                  <button onclick="runSimulasi1Action('connect')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition flex items-center justify-center gap-1">
+                    <i class="fa-brands fa-github"></i> 1. Connect Repo
+                  </button>
+                  <button onclick="runSimulasi1Action('provider')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-gear"></i> 2. Select Platform
+                  </button>
+                  <button onclick="runSimulasi1Action('deploy')" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-rocket"></i> 3. Trigger Deploy
+                  </button>
+                  <button onclick="runSimulasi1Action('domain')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] py-1.5 px-2 rounded-lg transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-globe"></i> 4. Generate URL
+                  </button>
+                </div>
+
+                <!-- Simulated Deployment Output Window -->
+                <div class="bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono-code text-[11px] min-h-[130px] overflow-x-auto shadow-inner" id="sim1-deploy-output">
+                  <span class="text-slate-500">// Deployment Engine Ready. Klik tombol langkah peluncuran web di atas...</span>
+                </div>
+
+                <!-- Visual Domain Status -->
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs flex justify-between items-center" id="sim1-domain-state">
+                  <span class="text-slate-500">Platform: <strong class="text-slate-800" id="sim1-active-provider">-</strong></span>
+                  <span class="text-slate-500">Status URL: <strong class="text-indigo-600 truncate max-w-[150px]" id="sim1-url-status">Offline</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mt-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Silakan hubungkan repositori web Anda.</span>
+              <button onclick="catatSimulasi(1)" id="btn-catat-1" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil Deployment
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Audit Performance & Cross-Browser Testing -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-gauge-high text-indigo-600"></i> Simulasi 2: Lighthouse Audit & Optimasi
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">Google Lighthouse</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Jalankan pengujian audit Google Lighthouse pada URL situs web yang sudah di-deploy, lalu terapkan optimasi gambar dan minifikasi kode.</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="runSimulasi2Action('audit')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-magnifying-glass font-bold"></i> 1. Audit Awal
+                  </button>
+                  <button onclick="runSimulasi2Action('compress')" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-file-image"></i> 2. Kompres WebP
+                  </button>
+                  <button onclick="runSimulasi2Action('minify')" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-code"></i> 3. Minify CSS/JS
+                  </button>
+                  <button onclick="runSimulasi2Action('re-audit')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-circle-check"></i> 4. Re-Audit Web
+                  </button>
+                </div>
+
+                <!-- Live Score Dashboard Container -->
+                <div id="sim2-audit-container" class="p-4 bg-white rounded-xl border border-slate-200 min-h-[130px] flex flex-col justify-center items-center text-center">
+                  <i class="fa-solid fa-chart-line text-slate-300 text-3xl mb-2"></i>
+                  <span class="text-xs text-slate-400 italic">Jalankan Audit Lighthouse untuk menampilkan skor performa situs web Anda.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center mt-2">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Uji kualitas dan performa situs web.</span>
+              <button onclick="catatSimulasi(2)" id="btn-catat-2" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil Audit Web
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi hasil peluncuran web (deployment cloud), perolehan URL publik, dan pengujian skor Google Lighthouse Audit.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Prosedur / Platform Hosting</th>
+                <th class="px-4 py-3">Parameter / URL Domain</th>
+                <th class="px-4 py-3">Hasil Peluncuran / Skor Audit</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi: Hosting, Domain & Deployment
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda terkait web hosting, sistem DNS, peluncuran gratis via GitHub Pages/Vercel/Netlify, serta pengujian Lighthouse Audit.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal PG</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan simulasi telah dikerjakan sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-indigo-100 text-indigo-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-indigo-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // URL Web App Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // State Simulasi 1: Automated Deployment
+    let isRepoConnected = false;
+    let selectedProvider = "";
+    let isDeployed = false;
+    let liveUrl = "";
+    let lastSim1Log = { cmd: "", provider: "-", result: "" };
+
+    // State Simulasi 2: Lighthouse Audit
+    let isAudited = false;
+    let auditScorePerf = 62;
+    let auditScoreAcc = 88;
+    let auditScoreSEO = 85;
+    let isOptimizedImage = false;
+    let isMinified = false;
+    let lastSim2Log = { step: "", score: "-", status: "" };
+
+    // [DATA CSV SISWA]
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          selNama.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // --- LOGIKA SIMULASI 1: AUTOMATED DEPLOYMENT ---
+    function runSimulasi1Action(act) {
+      const deployOut = document.getElementById('sim1-deploy-output');
+      const providerEl = document.getElementById('sim1-active-provider');
+      const urlStatusEl = document.getElementById('sim1-url-status');
+      const statusText = document.getElementById('sim1-status-text');
+
+      let outText = "";
+
+      if (act === 'connect') {
+        isRepoConnected = true;
+        outText = "> Connecting GitHub Repository...\n[OK] Linked to: github.com/siswa/proyek-web-interaktif.git\n[OK] Branch 'main' detected with index.html in root.";
+        lastSim1Log = { cmd: "Connect GitHub Repo", provider: selectedProvider || "Not Selected", result: "Repositori terhubung" };
+        showToast("GitHub Connected", "Repositori web berhasil terhubung.", "success");
+      } 
+      else if (act === 'provider') {
+        if (!isRepoConnected) {
+          showToast("Error Deployment", "Hubungkan repositori GitHub terlebih dahulu!", "warning");
+          deployOut.innerText = "Error: No GitHub repository connected to deployment pipeline.";
+          return;
+        }
+        selectedProvider = "Vercel / GitHub Pages";
+        outText = "> Target Hosting Platform Selected: Vercel Cloud Platform\n> Build Command: Static HTML/CSS/JS\n> Output Directory: /\n> SSL Certificate: Automated Let's Encrypt";
+        lastSim1Log = { cmd: "Select Platform Provider", provider: selectedProvider, result: "Konfigurasi Hosting Siap" };
+        showToast("Platform Ready", "Penyedia Hosting Vercel dikonfigurasi.", "success");
+      }
+      else if (act === 'deploy') {
+        if (!selectedProvider) {
+          showToast("Error Deployment", "Pilih platform hosting penyedia terlebih dahulu!", "warning");
+          deployOut.innerText = "Error: Target platform provider not specified.";
+          return;
+        }
+        isDeployed = true;
+        outText = `> Executing Automated Deployment...\n> Building HTML assets...\n> Uploading files to Edge Network...\n[SUCCESS] Deployment completed in 3.42s!\n[STATUS] HTTP 200 OK (Live in Production)`;
+        lastSim1Log = { cmd: "Trigger Deployment (CI/CD)", provider: selectedProvider, result: "Peluncuran Sukses (Live)" };
+        showToast("Deploy Success", "Situs web berhasil di-deploy ke peladen publik!", "success");
+      }
+      else if (act === 'domain') {
+        if (!isDeployed) {
+          showToast("Error Domain", "Jalankan proses deployment terlebih dahulu!", "warning");
+          deployOut.innerText = "Error: Unable to generate domain. Project not deployed yet.";
+          return;
+        }
+        liveUrl = "https://proyek-siswa.vercel.app";
+        outText = `> Domain DNS Routing Completed:\n  Primary URL : ${liveUrl}\n  HTTPS SSL   : Active (Valid Certificate)\n  DNS Record  : CNAME cname.vercel-dns.com`;
+        lastSim1Log = { cmd: "Generate Public Domain URL", provider: selectedProvider, result: liveUrl };
+        showToast("URL Domain Active", `Domain aktif: ${liveUrl}`, "success");
+      }
+
+      deployOut.innerText = outText;
+      providerEl.innerText = selectedProvider || "-";
+      urlStatusEl.innerText = liveUrl ? liveUrl : (isDeployed ? "Active (No URL)" : "Offline");
+      statusText.innerText = `Terakhir dieksekusi: ${act}`;
+    }
+
+    // --- LOGIKA SIMULASI 2: LIGHTHOUSE AUDIT & OPTIMASI ---
+    function runSimulasi2Action(act) {
+      const container = document.getElementById('sim2-audit-container');
+      const statusText = document.getElementById('sim2-status-text');
+
+      if (act === 'audit') {
+        isAudited = true;
+        auditScorePerf = 62;
+        container.innerHTML = `
+          <div class="text-left w-full bg-slate-50 border border-slate-200 p-3 rounded-xl">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-bold uppercase bg-amber-100 text-amber-800 px-2 py-0.5 rounded border border-amber-200">Lighthouse Initial Audit</span>
+              <span class="text-xs font-mono font-bold text-slate-700">Audit Status: Done</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center my-2">
+              <div class="p-2 bg-rose-50 border border-rose-200 rounded-lg">
+                <span class="text-xs font-bold text-slate-500 block">Performance</span>
+                <span class="text-xl font-black text-rose-600">${auditScorePerf}</span>
+              </div>
+              <div class="p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <span class="text-xs font-bold text-slate-500 block">Accessibility</span>
+                <span class="text-xl font-black text-emerald-600">${auditScoreAcc}</span>
+              </div>
+              <div class="p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <span class="text-xs font-bold text-slate-500 block">SEO</span>
+                <span class="text-xl font-black text-emerald-600">${auditScoreSEO}</span>
+              </div>
+            </div>
+            <p class="text-[11px] text-rose-700 mt-1"><i class="fa-solid fa-triangle-exclamation"></i> Peringatan: Ukuran berkas gambar terlalu besar & berkas CSS belum di-minify.</p>
+          </div>
+        `;
+        lastSim2Log = { step: "1. Audit Awal Lighthouse", score: `Perf: ${auditScorePerf} | Acc: ${auditScoreAcc} | SEO: ${auditScoreSEO}`, status: "Perlu Optimasi Performa" };
+        statusText.innerText = "Audit Lighthouse Selesai! Skor Performa: 62 (Kuning/Merah)";
+        showToast("Audit Complete", "Audit performa awal selesai.", "info");
+      }
+      else if (act === 'compress') {
+        if (!isAudited) {
+          showToast("Error Audit", "Jalankan Audit Awal terlebih dahulu!", "warning");
+          return;
+        }
+        isOptimizedImage = true;
+        auditScorePerf += 18;
+        container.innerHTML = `
+          <div class="text-left w-full bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-950">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-amber-800 mb-1">
+              <i class="fa-solid fa-file-image text-amber-600"></i> Optimasi Gambar Selesai
+            </div>
+            <p class="text-xs font-mono text-slate-700">Gambar dikompresi: hero.png (3.4 MB) -> hero.webp (210 KB)<br>Penghematan Ukuran: 93.8%<br>Estimasi Skor Performa Terbaru: ${auditScorePerf}</p>
+          </div>
+        `;
+        lastSim2Log = { step: "2. Kompres Format WebP", score: `Estimasi Perf: ${auditScorePerf}`, status: "Ukuran Gambar Berhasil Diperkecil" };
+        statusText.innerText = "Gambar berhasil diubah ke format WebP!";
+        showToast("Optimasi Gambar", "Aset gambar terkompresi hingga 93%.", "success");
+      }
+      else if (act === 'minify') {
+        if (!isAudited) {
+          showToast("Error Audit", "Jalankan Audit Awal terlebih dahulu!", "warning");
+          return;
+        }
+        isMinified = true;
+        auditScorePerf += 16;
+        if (auditScorePerf > 98) auditScorePerf = 98;
+        container.innerHTML = `
+          <div class="text-left w-full bg-purple-50 border border-purple-200 p-3 rounded-xl text-purple-950">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-purple-800 mb-1">
+              <i class="fa-solid fa-code text-purple-600"></i> Minifikasi Berkas CSS & JS
+            </div>
+            <p class="text-xs font-mono text-slate-700">Removing whitespace, comments & line breaks...<br>style.css -> style.min.css (-45%)<br>app.js -> app.min.js (-38%)</p>
+          </div>
+        `;
+        lastSim2Log = { step: "3. Minify Berkas CSS & JS", score: `Estimasi Perf: ${auditScorePerf}`, status: "Berkas Kode Di-minify" };
+        statusText.innerText = "Minifikasi kode selesai!";
+        showToast("Minify Code", "Komentar & spasi berkas dihapus.", "success");
+      }
+      else if (act === 're-audit') {
+        if (!isOptimizedImage && !isMinified) {
+          showToast("Error Re-Audit", "Lakukan optimasi gambar atau minifikasi kode lebih dulu!", "warning");
+          return;
+        }
+        container.innerHTML = `
+          <div class="text-left w-full bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded border border-emerald-300">Post-Optimization Lighthouse Audit</span>
+              <span class="text-xs font-mono font-bold text-emerald-700">Passed All Audits</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center my-2">
+              <div class="p-2 bg-white border border-emerald-300 rounded-lg">
+                <span class="text-xs font-bold text-slate-500 block">Performance</span>
+                <span class="text-xl font-black text-emerald-600">${auditScorePerf}</span>
+              </div>
+              <div class="p-2 bg-white border border-emerald-300 rounded-lg">
+                <span class="text-xs font-bold text-slate-500 block">Accessibility</span>
+                <span class="text-xl font-black text-emerald-600">${auditScoreAcc}</span>
+              </div>
+              <div class="p-2 bg-white border border-emerald-300 rounded-lg">
+                <span class="text-xs font-bold text-slate-500 block">SEO</span>
+                <span class="text-xl font-black text-emerald-600">${auditScoreSEO}</span>
+              </div>
+            </div>
+            <p class="text-[11px] text-emerald-800 font-medium mt-1"><i class="fa-solid fa-circle-check"></i> Luar biasa! Performa halaman web mencapai zona hijau (Optimal).</p>
+          </div>
+        `;
+        lastSim2Log = { step: "4. Re-Audit Google Lighthouse", score: `Perf: ${auditScorePerf} | Acc: ${auditScoreAcc} | SEO: ${auditScoreSEO}`, status: "Situs Web Sangat Cepat & Optimal" };
+        statusText.innerText = `Re-Audit Sukses! Skor Performa Meningkat Menjadi ${auditScorePerf}`;
+        showToast("Re-Audit Completed", "Situs web memenuhi kualifikasi performa tinggi!", "success");
+      }
+    }
+
+    // RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        if (!lastSim1Log.cmd) {
+          showToast("Perhatian", "Jalankan Simulasi 1 Automated Deployment terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 1: Automated Deployment",
+          fitur: lastSim1Log.cmd,
+          input: `Platform: ${lastSim1Log.provider}`,
+          output: lastSim1Log.result
+        };
+      } else if (simNum === 2) {
+        if (!lastSim2Log.step) {
+          showToast("Perhatian", "Jalankan Simulasi 2 Lighthouse Audit terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 2: Lighthouse Audit & Optimasi",
+          fitur: lastSim2Log.step,
+          input: `Hasil Skor: ${lastSim2Log.score}`,
+          output: lastSim2Log.status
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil simulasi dipindahkan ke tabel pengamatan.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 text-[11px] font-mono text-indigo-700 bg-slate-50 rounded truncate max-w-[180px]">${row.fitur}</td>
+          <td class="px-4 py-3 text-slate-700 italic">${row.input}</td>
+          <td class="px-4 py-3 font-bold text-slate-900">${row.output}</td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Perintah Prosedur,Parameter URL/Skor,Hasil Eksekusi Output\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.fitur}","${d.input}","${d.output}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "LKPD16_Hosting_Deployment_Pengamatan.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil praktikum terunduh.", "success");
+    }
+
+    // QUESTION BANK LKPD 16 (20 SOAL PG - Hosting, Domain, Deployment & Lighthouse)
+    const questionBankWeb = [
+      { id: 1, q: "Apa fungsi utama dari Web Hosting dalam proses peluncuran situs web publik?", options: ["A. Menyimpan berkas proyek agar dapat diakses pengguna di internet melalui server publik", "B. Membuat tata letak desain antarmuka web secara otomatis", "C. Mengompilasi kode program C++ menjadi berkas biner", "D. Mengedit konten teks halaman web secara langsung", "E. Mengamankan komputer lokal dari serangan virus"], ans: "A" },
+      { id: 2, q: "Sistem yang bertugas menerjemahkan nama domain yang mudah diingat (seperti sekolah.sch.id) menjadi alamat IP server dinamakan...", options: ["A. HTTP Protocol", "B. FTP Server", "C. DNS (Domain Name System)", "D. DHCP Server", "E. HTML Parser"], ans: "C" },
+      { id: 3, q: "Manakah dari pilihan layanan berikut yang menyediakan platform hosting gratis khusus untuk situs web statis berbasis repositori Git?", options: ["A. Microsoft Excel Online", "B. GitHub Pages, Vercel, dan Netlify", "C. MySQL Workbench", "D. Google Drive Viewer", "E. Adobe Dreamweaver Cloud"], ans: "B" },
+      { id: 4, q: "Apa yang dimaksud dengan proses peluncuran (deployment) situs web?", options: ["A. Memindahkan dan mengonfigurasi berkas proyek dari lingkungan lokal ke server publik agar dapat diakses secara umum", "B. Menulis ulang seluruh kode program dari awal", "C. Menghapus repositori Git yang sudah tidak terpakai", "D. Membeli perangkat keras server komputer baru", "E. Menginstal editor kode VS Code di server"], ans: "A" },
+      { id: 5, q: "Platform hosting modern seperti Vercel dan Netlify mengadopsi fitur Automated Deployment, yang berarti...", options: ["A. Komputer pengguna akan mati otomatis setelah 5 menit", "B. Pengguna harus mengunggah berkas ZIP secara manual setiap hari", "C. Web akan memperbarui tampilan publik secara otomatis setiap kali terdapat perintah 'git push' ke repositori", "D. Domain web berubah secara acak setiap minggu", "E. Berkas HTML diubah menjadi format PDF secara otomatis"], ans: "C" },
+      { id: 6, q: "Istilah TLD (Top-Level Domain) merujuk pada...", options: ["A. Alamat IP server lokal", "B. Ekstensi di bagian akhir nama domain seperti .com, .org, atau .id", "C. Folder utama tempat menyimpan berkas gambar", "D. Jenis bahasa pemrograman yang digunakan", "E. Kecepatan transfer data internet"], ans: "B" },
+      { id: 7, q: "Alat pengujian bawaan browser Google Chrome yang digunakan untuk mengukur performa, aksesibilitas, dan SEO situs web dinamakan...", options: ["A. Google Analytics", "B. Google Search Console", "C. Google Lighthouse", "D. Chrome Task Manager", "E. Network Sniffer"], ans: "C" },
+      { id: 8, q: "Berkas berkode utama yang secara otomatis dicari oleh server web (seperti GitHub Pages) sebagai halaman beranda utama saat domain diakses adalah...", options: ["A. index.html", "B. home.php", "C. main.css", "D. config.json", "E. default.js"], ans: "A" },
+      { id: 9, q: "Pengujian Cross-Browser Testing bertujuan untuk...", options: ["A. Mengukur harga sewa hosting di berbagai penyedia", "B. Memastikan tampilan dan fitur web berjalan konsisten di berbagai browser (Chrome, Firefox, Safari, Edge)", "C. Memeriksa koneksi kabel LAN server", "D. Menghapus riwayat pencarian browser secara permanen", "E. Mengubah bahasa antarmuka browser otomatis"], ans: "B" },
+      { id: 10, q: "Indikator Accessibility (Aksesibilitas) pada pengujian Google Lighthouse mengukur...", options: ["A. Kecepatan server dalam merespons data", "B. Kemudahan akses dan keterbacaan web bagi seluruh pengguna, termasuk pengguna disabilitas (contoh: atribut alt gambar dan kontras warna)", "C. Kelengkapan kata kunci pencarian di mesin cari", "D. Jumlah tautan luar yang aktif", "E. Format ekstensi berkas CSS"], ans: "B" },
+      { id: 11, q: "Apa dampak dari optimasi ukuran gambar (misalnya mengompresi format PNG/JPG menjadi WebP) terhadap situs web?", options: ["A. Memperlambat proses pemuatan halaman web", "B. Mempercepat durasi pemuatan (loading time) halaman web dan meningkatkan skor Lighthouse Performance", "C. Merusak struktur tata letak HTML secara permanen", "D. Menyebabkan domain web tidak dapat diakses", "E. Menghapus atribut teks alt pada tag img"], ans: "B" },
+      { id: 12, q: "Prosedur Minification (minifikasi) pada berkas CSS dan JavaScript bertujuan untuk...", options: ["A. Menghapus spasi, baris baru, dan komentar yang tidak perlu guna memperkecil ukuran berkas kode", "B. Mengubah kode JavaScript menjadi bahasa Python", "C. Menambahkan komentar penjelas di setiap baris kode", "D. Mengunci berkas agar tidak dapat diubah oleh orang lain", "E. Mengodekan berkas menjadi format gambar biner"], ans: "A" },
+      { id: 13, q: "Protokol keamanan web yang ditandai dengan ikon gembok terunci dan awalan https:// pada nama domain adalah...", options: ["A. FTP", "B. HTTP", "C. SSL/TLS Certificate", "D. SSH Tunnel", "E. SMTP"], ans: "C" },
+      { id: 14, q: "Fitur Custom Domain pada platform hosting seperti Vercel atau Netlify memungkinkan pengembang untuk...", options: ["A. Mengubah nama pengguna akun GitHub", "B. Menghubungkan alamat domain milik sendiri (misal: portofolio.com) menggantikan domain bawaan platform", "C. Menyembunyikan seluruh berkas HTML dari publik", "D. Mempercepat koneksi internet pengguna", "E. Membayar tagihan hosting menggunakan poin gratis"], ans: "B" },
+      { id: 15, q: "Tag HTML <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> berperan penting dalam pengujian web karena...", options: ["A. Mengubah warna latar belakang browser", "B. Memastikan tata letak situs web dapat menyesuaikan lebar layar perangkat seluler secara responsif", "C. Mengunggah proyek ke GitHub Pages", "D. Mengompres berkas gambar secara otomatis", "E. Mengaktifkan fitur pencarian Google"], ans: "B" },
+      { id: 16, q: "Indikator SEO (Search Engine Optimization) pada audit Lighthouse menguji...", options: ["A. Kelengkapan meta tag, tag title, dan struktur indeks halaman agar mudah ditemukan oleh mesin pencari seperti Google", "B. Kecepatan memutar video resolusi 4K", "C. Jenis font yang digunakan dalam CSS", "D. Keamanan kata sandi basis data", "E. Kapasitas RAM yang digunakan oleh server"], ans: "A" },
+      { id: 17, q: "Penyebab paling umum dari kesalahan HTTP 404 Not Found saat mengakses URL web yang baru di-deploy ke GitHub Pages adalah...", options: ["A. Komputer klien tidak memiliki koneksi Bluetooth", "B. Berkas utama index.html tidak diletakkan di root folder atau terjadi kesalahan penulisan nama berkas", "C. Ukuran berkas CSS terlalu kecil", "D. Browser belum diperbarui ke versi terbaru", "E. Pengguna belum menginstal Node.js"], ans: "B" },
+      { id: 18, q: "Metric First Contentful Paint (FCP) dalam audit performa Google Lighthouse mengukur...", options: ["A. Durasi total mengunduh berkas ZIP", "B. Waktu yang dibutuhkan browser untuk menampilkan elemen visual/konten pertama di layar pengguna", "C. Berapa kali situs web dikunjungi oleh pengguna lain", "D. Kecepatan mengetik pengembang di terminal", "E. Waktu kedaluwarsa sertifikat SSL"], ans: "B" },
+      { id: 19, q: "Mengapa disarankan untuk menggunakan mode Incognito/Private Browser saat melakukan pengujian performa dengan Google Lighthouse?", options: ["A. Agar warna antarmuka Lighthouse berubah menjadi gelap", "B. Agar hasil pengujian tidak dipengaruhi oleh ekstensi (extensions) atau cache browser yang terpasang", "C. Untuk menyembunyikan alamat IP komputer dari internet", "D. Agar nilai skor audit otomatis menjadi 100", "E. Mencegah browser menyimpan riwayat commit Git"], ans: "B" },
+      { id: 20, q: "Langkah optimasi yang tepat jika audit Lighthouse memberikan rekomendasi 'Eliminate render-blocking resources' adalah...", options: ["A. Menghapus seluruh berkas CSS dari proyek web", "B. Menambahkan atribut 'defer' atau 'async' pada tag script JavaScript agar tidak menghambat pemuatan HTML", "C. Mengganti nama berkas script.js menjadi script.html", "D. Mematikan server web selama 10 menit", "E. Mengodekan ulang seluruh antarmuka menggunakan bahasa C"], ans: "B" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-indigo-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-indigo-600">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-indigo-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 16: Hosting, Domain, dan Deployment Halaman Web",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai konsep dasar Web Hosting, DNS, Automated Deployment via GitHub Pages/Vercel, serta teknik audit Google Lighthouse.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali mengenai perbedaan Web Hosting & Domain, serta alur optimasi gambar dan minifikasi kode.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi materi alur deployment situs web statis dan indikator audit performa Google Lighthouse.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-indigo-400";
+      if (type === "success") icon = "fa-circle-check text-emerald-400";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-400";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Inisialisasi Saat Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>

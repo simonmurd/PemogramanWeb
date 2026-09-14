@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 13: Validasi Form Tingkat Lanjut dan Penyimpanan Lokal (Local Storage)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-500 p-2.5 rounded-xl text-white shadow-xs">
+          <i class="fa-solid fa-shield-halved text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 13: Validasi Form Tingkat Lanjut & Local Storage</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Validasi RegEx, Web Storage API (localStorage & sessionStorage), dan Manipulasi Status Form</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-amber-500 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-amber-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Form Validation & Web Storage -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Validasi Form Tingkat Lanjut & Web Storage API
+          </h2>
+          <span class="text-[11px] bg-amber-50 text-amber-700 font-semibold px-2.5 py-1 rounded-full border border-amber-200">Bab 13: Form & Storage</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          Pengolahan data formulir di sisi klien memerlukan tingkat keandalan yang tinggi. Penggunaan <strong>Regular Expression (RegEx)</strong> memungkinkan pemfilteran format email dan kriteria password secara real-time. Sementara itu, <strong>Web Storage API</strong> (<code class="font-mono">localStorage</code> & <code class="font-mono">sessionStorage</code>) berguna untuk menyimpan preferensi pengguna atau draf formulir secara langsung pada peramban web tanpa memerlukan basis data eksternal.
+        </p>
+
+        <!-- Teori Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-code text-amber-600"></i> 1. Regular Expression (RegEx)</h4>
+            <p class="text-slate-600 mb-2">Pola untuk mencocokkan kombinasi karakter pada string (misal: validasi email/password).</p>
+            <div class="bg-slate-900 text-amber-400 p-2 rounded-lg font-mono-code text-[10px]">
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;<br>
+              const isValid = emailRegex.test(emailInput.value);
+            </div>
+          </div>
+          
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-hard-drive text-amber-600"></i> 2. Local Storage API</h4>
+            <p class="text-slate-600 mb-2">Menyimpan data tanpa batas waktu (persisten), tetap ada meski tab/browser ditutup.</p>
+            <div class="bg-slate-900 text-amber-400 p-2 rounded-lg font-mono-code text-[10px]">
+              localStorage.setItem('username', 'Budi');<br>
+              const name = localStorage.getItem('username');<br>
+              localStorage.removeItem('username');
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-clock-rotate-left text-amber-600"></i> 3. Session Storage API</h4>
+            <p class="text-slate-600 mb-2">Menyimpan data sementara untuk sesi tab saat ini. Data terhapus saat tab ditutup.</p>
+            <div class="bg-slate-900 text-amber-400 p-2 rounded-lg font-mono-code text-[10px]">
+              sessionStorage.setItem('tempDraft', 'Isi Form');<br>
+              const draft = sessionStorage.getItem('tempDraft');
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-keyboard text-amber-600"></i> 4. Event Real-time Form</h4>
+            <p class="text-slate-600 mb-2">Merespons ketikan pengguna secara langsung tanpa menunggu tombol submit diklik.</p>
+            <div class="bg-slate-900 text-amber-400 p-2 rounded-lg font-mono-code text-[10px]">
+              input.addEventListener('input', (e) => { ... });<br>
+              input.addEventListener('blur', (e) => { ... });
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif Bab 13
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Praktikum pengujian validasi input RegEx real-time dan persistent storage lokal di peramban.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">2 Skenario</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Real-time Form Validation dengan RegEx -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-check-double text-amber-600"></i> Simulasi 1: Real-time Form Validation (RegEx)
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded border border-amber-200">RegEx & Event Input</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Uji format input email dan kekuatan kata sandi secara interaktif menggunakan ekspresi reguler saat Anda mengetik.</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-4">
+                
+                <!-- Field Email -->
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Alamat Email:</label>
+                  <input type="email" id="sim1-email" oninput="sim1ValidateEmail()" placeholder="contoh: siswa@sekolah.sch.id" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-amber-400 transition">
+                  <span id="sim1-email-msg" class="text-[10px] font-semibold mt-1 block text-slate-400"><i class="fa-solid fa-circle-info mr-1"></i>Ketik format email yang valid.</span>
+                </div>
+
+                <!-- Field Password -->
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Kata Sandi (Min 8 Karakter, kombinasi huruf & angka):</label>
+                  <input type="password" id="sim1-password" oninput="sim1ValidatePassword()" placeholder="Ketik kata sandi..." class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-amber-400 transition">
+                  <span id="sim1-pass-msg" class="text-[10px] font-semibold mt-1 block text-slate-400"><i class="fa-solid fa-circle-info mr-1"></i>Minimal 8 karakter (harus ada huruf & angka).</span>
+                </div>
+
+                <!-- Code Log Display -->
+                <div class="text-[10px] font-mono bg-slate-900 text-amber-400 p-2.5 rounded-lg overflow-x-auto" id="sim1-code-preview">
+                  // Status Evaluasi RegEx akan muncul di sini secara langsung...
+                </div>
+
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mt-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Silakan isi form di atas untuk menguji RegEx.</span>
+              <button onclick="catatSimulasi(1)" id="btn-catat-1" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil Validation
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Persistent Data dengan Web Storage API -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-floppy-disk text-amber-600"></i> Simulasi 2: Persistent Data (localStorage API)
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded border border-amber-200">localStorage.setItem()</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Simpan isi input form atau preferensi ke <code class="font-mono">localStorage</code>. Data tetap ada saat browser di-refresh!</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-3">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Catatan / Preferensi Draf Form:</label>
+                  <input type="text" id="sim2-input-data" placeholder="Ketik draf catatan praktikum..." class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-amber-400 transition">
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="sim2SaveStorage()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                    <i class="fa-solid fa-download"></i> Simpan (setItem)
+                  </button>
+                  <button onclick="sim2LoadStorage()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                    <i class="fa-solid fa-upload"></i> Muat (getItem)
+                  </button>
+                  <button onclick="sim2ClearStorage()" class="bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                    <i class="fa-solid fa-trash-can"></i> Hapus (removeItem)
+                  </button>
+                </div>
+
+                <div class="text-[10px] font-mono bg-slate-900 text-amber-400 p-2.5 rounded-lg overflow-x-auto" id="sim2-code-preview">
+                  localStorage.getItem('draf_lkpd13'); // Belum ada data dipanggil
+                </div>
+
+                <div class="p-3 bg-white rounded-xl border border-slate-300">
+                  <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Nilai Tersimpan di Browser:</span>
+                  <p id="sim2-display-value" class="text-xs font-semibold text-slate-800 italic">(Kosong / Belum Tersimpan)</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center mt-2">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Coba simpan data, lalu refresh halaman untuk membuktikannya.</span>
+              <button onclick="catatSimulasi(2)" id="btn-catat-2" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil Storage
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum Form & Storage
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi aktivitas praktikum pengujian RegEx dan manajemen Web Storage API.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Metode / RegEx / API</th>
+                <th class="px-4 py-3">Input / Aksi Interaksi</th>
+                <th class="px-4 py-3">Hasil / Respon Status</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi: Validasi Form & Local Storage
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda terkait ekspresi reguler (RegEx), Web Storage API, event handling form, dan persistent data.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal PG</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan simulasi telah dikerjakan sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-amber-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // URL Web App Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // Log State Simulasi Form & Storage
+    let lastSim1Log = { method: "RegEx test()", input: "Inisialisasi Input", output: "Menunggu masukan email/password" };
+    let lastSim2Log = { method: "localStorage.getItem()", input: "Inisialisasi Storage", output: "Memeriksa data lokal" };
+
+    // [DATA CSV SISWA]
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          selNama.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // --- LOGIKA SIMULASI 1: REAL-TIME FORM VALIDATION REGEX ---
+    function sim1ValidateEmail() {
+      const emailInput = document.getElementById('sim1-email');
+      const msg = document.getElementById('sim1-email-msg');
+      const codePreview = document.getElementById('sim1-code-preview');
+      const statusText = document.getElementById('sim1-status-text');
+
+      const val = emailInput.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isValid = emailRegex.test(val);
+
+      if (!val) {
+        msg.className = "text-[10px] font-semibold mt-1 block text-slate-400";
+        msg.innerHTML = `<i class="fa-solid fa-circle-info mr-1"></i>Ketik format email yang valid.`;
+        emailInput.className = "w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-amber-400 transition";
+      } else if (isValid) {
+        msg.className = "text-[10px] font-semibold mt-1 block text-emerald-600";
+        msg.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i>Format email valid!`;
+        emailInput.className = "w-full bg-emerald-50 border border-emerald-500 rounded-lg px-3 py-1.5 text-xs text-emerald-900 outline-none transition";
+      } else {
+        msg.className = "text-[10px] font-semibold mt-1 block text-rose-600";
+        msg.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1"></i>Format email tidak sesuai (misal: user@domain.com)!`;
+        emailInput.className = "w-full bg-rose-50 border border-rose-500 rounded-lg px-3 py-1.5 text-xs text-rose-900 outline-none transition";
+      }
+
+      codePreview.innerText = `const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;\nemailRegex.test("${val}") === ${isValid}`;
+      statusText.innerText = `Evaluasi RegEx Email: ${isValid ? 'VALID' : 'INVALID'}`;
+
+      lastSim1Log = {
+        method: "RegEx test() - Email",
+        input: val || "(Kosong)",
+        output: isValid ? "Email Valid (Sesuai Pola)" : "Email Invalid (Tidak Sesuai Pola)"
+      };
+    }
+
+    function sim1ValidatePassword() {
+      const passInput = document.getElementById('sim1-password');
+      const msg = document.getElementById('sim1-pass-msg');
+      const codePreview = document.getElementById('sim1-code-preview');
+      const statusText = document.getElementById('sim1-status-text');
+
+      const val = passInput.value;
+      // Minimal 8 karakter, mengandung setidaknya 1 huruf dan 1 angka
+      const passRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
+      const isValid = passRegex.test(val);
+
+      if (!val) {
+        msg.className = "text-[10px] font-semibold mt-1 block text-slate-400";
+        msg.innerHTML = `<i class="fa-solid fa-circle-info mr-1"></i>Minimal 8 karakter (harus ada huruf & angka).`;
+        passInput.className = "w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-amber-400 transition";
+      } else if (isValid) {
+        msg.className = "text-[10px] font-semibold mt-1 block text-emerald-600";
+        msg.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i>Kata sandi kuat! (Sesuai kriteria)`;
+        passInput.className = "w-full bg-emerald-50 border border-emerald-500 rounded-lg px-3 py-1.5 text-xs text-emerald-900 outline-none transition";
+      } else {
+        msg.className = "text-[10px] font-semibold mt-1 block text-rose-600";
+        msg.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1"></i>Kata sandi lemah! Harus minimal 8 karakter dengan kombinasi huruf dan angka.`;
+        passInput.className = "w-full bg-rose-50 border border-rose-500 rounded-lg px-3 py-1.5 text-xs text-rose-900 outline-none transition";
+      }
+
+      codePreview.innerText = `const passRegex = /^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@$!%*#?&]{8,}$/;\npassRegex.test("${val}") === ${isValid}`;
+      statusText.innerText = `Evaluasi RegEx Password: ${isValid ? 'KUAT' : 'LEMAH'}`;
+
+      lastSim1Log = {
+        method: "RegEx test() - Password",
+        input: val ? "*****" : "(Kosong)",
+        output: isValid ? "Password Kuat (Huruf + Angka >= 8)" : "Password Lemah"
+      };
+    }
+
+    // --- LOGIKA SIMULASI 2: PERSISTENT DATA WEB STORAGE ---
+    function sim2SaveStorage() {
+      const input = document.getElementById('sim2-input-data');
+      const display = document.getElementById('sim2-display-value');
+      const codePreview = document.getElementById('sim2-code-preview');
+      const statusText = document.getElementById('sim2-status-text');
+
+      const val = input.value.trim();
+      if (!val) {
+        showToast("Peringatan", "Ketik draf catatan terlebih dahulu!", "warning");
+        return;
+      }
+
+      localStorage.setItem('draf_lkpd13', val);
+      display.innerText = val;
+      display.className = "text-xs font-bold text-emerald-700";
+
+      codePreview.innerText = `localStorage.setItem('draf_lkpd13', '${val}');\n// Data tersimpan di memori browser!`;
+      statusText.innerText = "Storage: Data berhasil disimpan ke localStorage";
+
+      lastSim2Log = {
+        method: "localStorage.setItem()",
+        input: `Simpan Data: "${val}"`,
+        output: "Data berhasil disimpan ke browser"
+      };
+
+      showToast("Tersimpan", "Data berhasil disimpan ke localStorage!", "success");
+    }
+
+    function sim2LoadStorage() {
+      const display = document.getElementById('sim2-display-value');
+      const codePreview = document.getElementById('sim2-code-preview');
+      const statusText = document.getElementById('sim2-status-text');
+
+      const storedVal = localStorage.getItem('draf_lkpd13');
+
+      if (storedVal !== null) {
+        display.innerText = storedVal;
+        display.className = "text-xs font-bold text-amber-700";
+        codePreview.innerText = `const data = localStorage.getItem('draf_lkpd13');\n// Output: "${storedVal}"`;
+        statusText.innerText = "Storage: Data berhasil dimuat dari localStorage";
+        showToast("Dimuat", "Data berhasil diambil dari localStorage!", "success");
+      } else {
+        display.innerText = "(Tidak ada data tersimpan)";
+        display.className = "text-xs font-semibold text-slate-400 italic";
+        codePreview.innerText = `const data = localStorage.getItem('draf_lkpd13');\n// Output: null`;
+        statusText.innerText = "Storage: Data tidak ditemukan (null)";
+        showToast("Info", "Belum ada data tersimpan di localStorage.", "info");
+      }
+
+      lastSim2Log = {
+        method: "localStorage.getItem()",
+        input: "Panggil Key: 'draf_lkpd13'",
+        output: storedVal !== null ? `Data Dimuat: "${storedVal}"` : "Data Null (Kosong)"
+      };
+    }
+
+    function sim2ClearStorage() {
+      const display = document.getElementById('sim2-display-value');
+      const codePreview = document.getElementById('sim2-code-preview');
+      const statusText = document.getElementById('sim2-status-text');
+
+      localStorage.removeItem('draf_lkpd13');
+      display.innerText = "(Data telah dihapus)";
+      display.className = "text-xs font-semibold text-rose-600 italic";
+
+      codePreview.innerText = `localStorage.removeItem('draf_lkpd13');\n// Data berhasil dihapus dari browser`;
+      statusText.innerText = "Storage: Key 'draf_lkpd13' berhasil dihapus";
+
+      lastSim2Log = {
+        method: "localStorage.removeItem()",
+        input: "Hapus Key: 'draf_lkpd13'",
+        output: "Item dihapus dari localStorage"
+      };
+
+      showToast("Dihapus", "Data draf berhasil dihapus dari localStorage.", "warning");
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        logEntry = {
+          modul: "Simulasi 1: Form Validation RegEx",
+          fitur: lastSim1Log.method,
+          input: lastSim1Log.input,
+          output: lastSim1Log.output
+        };
+      } else if (simNum === 2) {
+        logEntry = {
+          modul: "Simulasi 2: Persistent Storage",
+          fitur: lastSim2Log.method,
+          input: lastSim2Log.input,
+          output: lastSim2Log.output
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil pengujian berhasil dimasukkan ke tabel.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 text-[11px] font-mono text-amber-700 bg-amber-50 rounded font-semibold">${row.fitur}</td>
+          <td class="px-4 py-3 text-slate-700 italic">${row.input}</td>
+          <td class="px-4 py-3 font-bold text-slate-900">${row.output}</td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Metode API,Input Aksi,Hasil Output Respon\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.fitur}","${d.input}","${d.output}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "LKPD13_ValidasiForm_LocalStorage_DataPengamatan.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil praktikum terunduh.", "success");
+    }
+
+    // QUESTION BANK LKPD 13 (20 SOAL - Validasi Form & Local Storage)
+    const questionBankWeb = [
+      { id: 1, q: "Apa kegunaan utama dari Regular Expression (RegEx) pada pengembangan form formulir web?", options: ["A. Mengubah warna tombol submit secara acak", "B. Mencocokkan string input pengguna dengan pola kriteria tertentu", "C. Menyimpan data langsung ke dalam basis data MySQL", "D. Mengenkripsi seluruh lalu lintas halaman jaringan web", "E. Mempercepat waktu koneksi server"], ans: "B" },
+      { id: 2, q: "Method JavaScript manakah yang digunakan untuk menguji apakah suatu string memenuhi pola RegEx dan mengembalikan boolean (true/false)?", options: ["A. regex.test(string)", "B. regex.match(string)", "C. regex.search(string)", "D. regex.execute(string)", "E. regex.verify(string)"], ans: "A" },
+      { id: 3, q: "Dalam sintaks RegEx, simbol tanda sisip (^) dan tanda dolar ($) masing-masing menandakan...", options: ["A. Angka pertama dan angka terakhir", "B. Awal string dan akhir string", "C. Karakter spasi dan karakter tab", "D. Huruf kapital dan huruf kecil", "E. Komentar awal dan komentar akhir"], ans: "B" },
+      { id: 4, q: "Karakter khusus RegEx manakah yang digunakan untuk mencocokkan karakter digit angka (0-9)?", options: ["A. \\w", "B. \\s", "C. \\d", "D. \\b", "E. \\a"], ans: "C" },
+      { id: 5, q: "Manakah ekspresi RegEx sederhana yang paling tepat untuk memverifikasi format umum alamat email?", options: ["A. /^[a-z]+$/", "B. /^\\d{10}$/", "C. /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/", "D. /^[ABC]+@gmail$/", "E. /^[0-9]+@[0-9]+$/"], ans: "C" },
+      { id: 6, q: "Berapa lamakah data yang tersimpan di dalam Web Storage API (localStorage) akan bertahan?", options: ["A. Hanya selama 10 menit", "B. Sampai tab browser ditutup", "C. Persisten (bertahan selamanya) hingga dihapus secara manual atau via skrip", "D. Terhapus otomatis setiap jam 12 malam", "E. Hanya saat perangkat terhubung ke internet"], ans: "C" },
+      { id: 7, q: "Perbedaan utama antara localStorage dan sessionStorage terletak pada...", options: ["A. localStorage hanya dapat menyimpan angka, sessionStorage menyimpan teks", "B. Masa hidup data: sessionStorage terhapus saat sesi tab ditutup, localStorage bersifat persisten", "C. localStorage membutuhkan server backend, sessionStorage tidak", "D. Kapasitas sessionStorage jauh lebih besar dibanding localStorage", "E. localStorage tidak mendukung objek JSON"], ans: "B" },
+      { id: 8, q: "Sintaks JavaScript yang tepat untuk menyimpan nilai 'Ahmad' dengan kunci 'username' ke localStorage adalah...", options: ["A. localStorage.add('username', 'Ahmad');", "B. localStorage.setItem('username', 'Ahmad');", "C. localStorage.put('username', 'Ahmad');", "D. localStorage.save('username', 'Ahmad');", "E. localStorage.push('username', 'Ahmad');"], ans: "B" },
+      { id: 9, q: "Jika kita memanggil localStorage.getItem('alamat') dan kunci 'alamat' belum pernah disimpan, hasil kembaliannya adalah...", options: ["A. undefined", "B. false", "C. 0", "D. null", "E. Error Exception"], ans: "D" },
+      { id: 10, q: "Perintah JavaScript untuk menghapus seluruh pasangan kunci-nilai yang ada di dalam localStorage browser adalah...", options: ["A. localStorage.removeAll()", "B. localStorage.delete()", "C. localStorage.clear()", "D. localStorage.reset()", "E. localStorage.destroy()"], ans: "C" },
+      { id: 11, q: "Tipe data apakah yang selalu dihasilkan saat kita mengambil nilai dari localStorage menggunakan getItem()?", options: ["A. Object", "B. String", "C. Boolean", "D. Number", "E. Array"], ans: "B" },
+      { id: 12, q: "Untuk menyimpan objek JavaScript { nama: 'Siti', umur: 17 } ke localStorage, metode pembantu yang harus digunakan adalah...", options: ["A. JSON.parse()", "B. JSON.stringify()", "C. Object.toString()", "D. Array.join()", "E. String.encode()"], ans: "B" },
+      { id: 13, q: "Agar data string JSON yang diambil dari localStorage dapat diubah kembali menjadi objek JavaScript utuh, kita menggunakan...", options: ["A. JSON.parse(data)", "B. JSON.stringify(data)", "C. Object.toObject(data)", "D. String.decode(data)", "E. JSON.convert(data)"], ans: "A" },
+      { id: 14, q: "Event listener manakah pada elemen <input> yang paling efektif untuk menjalankan validasi RegEx secara real-time saat pengguna mengetik?", options: ["A. 'click'", "B. 'submit'", "C. 'input'", "D. 'load'", "E. 'hover'"], ans: "C" },
+      { id: 15, q: "Event listener 'blur' pada kolom input formulir akan terpicu ketika...", options: ["A. Pengguna menekan tombol Enter", "B. Kolom input kehilangan fokus (pengguna berpindah ke elemen lain)", "C. Pengguna mulai mengetik huruf pertama", "D. Teks pada kolom input disalin (copy)", "E. Halaman web di-refresh"], ans: "B" },
+      { id: 16, q: "Fungsi dari perintah event.preventDefault() pada penanganan peristiwa submit formulir adalah...", options: ["A. Menghapus seluruh isi input dalam formulir", "B. Mencegah perilaku bawaan browser reload/kirim halaman saat submit", "C. Menutup tab peramban secara otomatis", "D. Mengubah warna latar belakang formulir", "E. Menyimpan data langsung ke file PDF"], ans: "B" },
+      { id: 17, q: "RegEx manakah yang memastikan string kata sandi memiliki panjang minimal 8 karakter?", options: ["A. /^.{8,}$/", "B. /^.{0,8}$/", "C. /^[0-9]{8}$/", "D. /^.{8}$/", "E. /^[A-Z]{8}$/"], ans: "A" },
+      { id: 18, q: "Properti HTML5 form validation 'checkValidity()' pada elemen formulir mengembalikan nilai boolean true apabila...", options: ["A. Formulir telah dikirim ke server", "B. Seluruh input memenuhi kriteria atribut validasi HTML (required, pattern, type, dll)", "C. Pengguna telah mengisi nama lengkap", "D. Browser mendukung JavaScript", "E. localStorage dalam keadaan kosong"], ans: "B" },
+      { id: 19, q: "Berapakah rata-rata kapasitas batas penyimpanan maksimum default untuk localStorage di sebagian besar peramban modern?", options: ["A. 100 Kilobyte (KB)", "B. 5 Megabyte (MB)", "C. 1 Gigabyte (GB)", "D. Tanpa Batas (Unlimited)", "E. 50 Megabyte (MB)"], ans: "B" },
+      { id: 20, q: "Mengapa informasi sangat sensitif seperti kata sandi mentah atau token rahasia tidak disarankan disimpan mentah di localStorage?", options: ["A. Karena localStorage mudah diakses oleh skrip JavaScript di sisi klien (Rentan Cross-Site Scripting / XSS)", "B. Karena localStorage hanya dapat dibaca oleh server backend", "C. Karena localStorage otomatis terhapus setiap 5 menit", "D. Karena localStorage memperlambat koneksi internet", "E. Karena localStorage tidak didukung oleh browser smartphone"], ans: "A" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-amber-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-amber-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-amber-600">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-amber-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 13: Validasi Form Tingkat Lanjut dan Penyimpanan Lokal (Local Storage)",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai ekspresi reguler (RegEx), pengolahan form real-time, serta Web Storage API.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali mengenai sintaks RegEx email/password dan fungsi getItem/setItem.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi kembali konsep penyimpanan persisten di localStorage dan event listener form.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-amber-400";
+      if (type === "success") icon = "fa-circle-check text-emerald-400";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-400";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>

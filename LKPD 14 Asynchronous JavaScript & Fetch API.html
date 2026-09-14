@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LKPD 14: Asynchronous JavaScript dan Fetch API</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .locked-section { opacity: 0.35; pointer-events: none; filter: blur(2px); transition: all 0.4s ease; }
+    .unlocked-section { opacity: 1; pointer-events: auto; filter: blur(0); transition: all 0.4s ease; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .locked-section { opacity: 1 !important; filter: none !important; pointer-events: auto !important; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2.5 rounded-xl text-white">
+          <i class="fa-solid fa-network-wired text-2xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Lembar Kerja Peserta Didik Interaktif</span>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">LKPD 14: Asynchronous JavaScript & Fetch API</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Menerapkan konsep Promise, Async/Await, JSON, dan integrasi Public API tanpa reload halaman</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-slate-50 px-3.5 py-1.5 rounded-xl text-xs border border-slate-200">
+        <i class="fa-solid fa-graduation-cap text-slate-700"></i>
+        <span class="font-medium text-slate-700" id="status-lkpd-text">Status: Mengisi Identitas</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+    <!-- Section 1: Identitas Peserta Didik -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 relative shadow-xs">
+      <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-600 rounded-l-2xl"></div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">1</span>
+          Identitas Peserta Didik
+        </h2>
+        <span class="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200" id="identity-status-badge">
+          <i class="fa-solid fa-lock mr-1"></i> Wajib Diisi
+        </span>
+      </div>
+
+      <div id="validation-warning" class="mb-4 p-3 bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-slate-800 text-sm"></i>
+        <span>Pilih Sekolah, Kelas, dan Nama Lengkap Anda di bawah ini untuk mengaktifkan modul praktikum web.</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sekolah</label>
+          <select id="sel-sekolah" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition" onchange="updateDropdownKelas()">
+            <option value="">-- Pilih Sekolah --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kelas / Jurusan</label>
+          <select id="sel-kelas" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="updateDropdownSiswa()" disabled>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+          <select id="sel-nama" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-400 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed" onchange="validateIdentity()" disabled>
+            <option value="">-- Pilih Nama --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content" class="locked-section space-y-8">
+
+      <!-- Section 2: Ringkasan Teori Asynchronous JS & Fetch API -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">2</span>
+            Ringkasan Teori: Asynchronous JavaScript & Fetch API
+          </h2>
+          <span class="text-[11px] bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-1 rounded-full border border-indigo-200">Bab 14: Async & Fetch</span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed mb-5">
+          <strong>Asynchronous Programming</strong> memungkinkan JavaScript menjalankan proses asynchronous (seperti mengambil data dari server eksternal) di latar belakang tanpa menghentikan (blocking) eksekusi kode lainnya. Kombinasi <strong>Promise</strong>, sintaks <strong>async/await</strong>, format <strong>JSON</strong>, dan API bawaan <strong>fetch()</strong> memungkinkan aplikasi web mengambil dan menampilkan data dinamis secara instan tanpa perlu memuat ulang (*reload*) halaman.
+        </p>
+
+        <!-- Teori Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-clock-rotate-left text-indigo-600"></i> Konsep Synchronous vs Asynchronous</h4>
+            <p class="text-slate-600 mb-2">Synchronous mengeksekusi kode berurutan baris demi baris (blocking). Asynchronous mengeksekusi proses lambat secara non-blocking di latar belakang.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              console.log("Awal");<br>
+              setTimeout(() => console.log("Async Process"), 1000);<br>
+              console.log("Akhir"); // Dieksekusi sebelum setTimeout
+            </div>
+          </div>
+          
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-code text-indigo-600"></i> Sintaks Async / Await & Promise</h4>
+            <p class="text-slate-600 mb-2"><code class="font-bold">async</code> menandakan fungsi mengembalikan Promise. <code class="font-bold">await</code> menunda eksekusi sampai Promise selesai (settled).</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              async function getData() {<br>
+              &nbsp;&nbsp;const res = await fetch(url);<br>
+              &nbsp;&nbsp;const data = await res.json();<br>
+              }
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-file-code text-indigo-600"></i> Format Data JSON</h4>
+            <p class="text-slate-600 mb-2">JavaScript Object Notation: Format standar pertukaran data. Diubah dengan <code class="font-bold">JSON.parse()</code> dan <code class="font-bold">JSON.stringify()</code>.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              {"nama": "Siswa", "kelas": "XI TJKT", "aktif": true}
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
+            <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation text-indigo-600"></i> Loading State & Error Handling</h4>
+            <p class="text-slate-600 mb-2">Gunakan indikator pemrosesan (spinner) dan blok <code class="font-bold">try...catch...finally</code> untuk menangani error jaringan atau HTTP status 404/500.</p>
+            <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono-code text-[10px]">
+              try {<br>
+              &nbsp;&nbsp;if (!res.ok) throw new Error("Gagal mengambil data");<br>
+              } catch (err) { alert(err.message); }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Laboratorium Simulasi Interaktif -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">3</span>
+              Laboratorium Simulasi Interaktif Fetch API & Async/Await
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Praktikum pengambilan data dari Public API eksternal, penanganan loading state, serta mitigasi error jaringan.</p>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full border border-slate-200">2 Skenario</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Simulasi 1: Public API Data Fetching (Quotes / Cuaca) -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-cloud-arrow-down text-indigo-600"></i> Simulasi 1: Public API Data Fetching
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">fetch() + async/await</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Pilih Public API eksternal (Kutipan Kata atau Data Cuaca Real-time), lalu jalankan fungsi `fetch()` asynchronous untuk menampilkan hasilnya ke dalam card HTML.</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-3">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">Pilih Public API Endpoint</label>
+                  <select id="sim1-api-type" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white">
+                    <option value="quotes">API Kutipan Motivasi (DummyJSON Quotes API)</option>
+                    <option value="weather">API Cuaca Real-time Pontianak (Open-Meteo API)</option>
+                  </select>
+                </div>
+
+                <button onclick="runSimulasi1()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs py-2 rounded-lg transition flex items-center justify-center gap-1.5 shadow-xs">
+                  <i class="fa-solid fa-bolt"></i> Eksekusi fetch() Data API
+                </button>
+
+                <div class="text-[11px] font-mono bg-slate-900 text-emerald-400 p-2.5 rounded-lg overflow-x-auto" id="sim1-code-preview">
+                  // Kode Fetch API akan ditampilkan di sini setelah tombol di atas diklik...
+                </div>
+
+                <!-- Live Result Display Container -->
+                <div class="p-4 bg-white rounded-xl border border-slate-200 min-h-[120px] flex flex-col justify-center items-center text-center" id="sim1-api-container">
+                  <i class="fa-solid fa-server text-slate-300 text-3xl mb-2"></i>
+                  <span class="text-xs text-slate-400 italic">Klik "Eksekusi fetch() Data API" untuk mengambil data eksternal.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mt-2">
+              <span id="sim1-status-text" class="text-slate-600 font-medium text-[11px]">Silakan pilih API dan uji fetch data.</span>
+              <button onclick="catatSimulasi(1)" id="btn-catat-1" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil Fetch
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulasi 2: Handling Loading State & Error Alert -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-triangle-exclamation text-indigo-600"></i> Simulasi 2: Loading State & Error Alert
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">try...catch Handling</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mb-3">Uji penanganan koneksi lambat (indikator *loading spinner*) dan penanganan kesalahan (*error message*) menggunakan blok `try...catch` ketika endpoint API salah/404.</p>
+
+              <!-- UI Interactive Area -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl mb-3 space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="runSimulasi2('valid')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-circle-check"></i> Fetch Sukses (Valid)
+                  </button>
+                  <button onclick="runSimulasi2('invalid')" class="bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
+                    <i class="fa-solid fa-bug"></i> Fetch Error (404 / Salah)
+                  </button>
+                </div>
+
+                <!-- Indikator Loading Spinner -->
+                <div id="sim2-loading" class="hidden p-4 bg-indigo-50 border border-indigo-200 rounded-xl text-center">
+                  <i class="fa-solid fa-circle-notch fa-spin text-indigo-600 text-2xl mb-1"></i>
+                  <p class="text-xs font-semibold text-indigo-900">Sedang mengunduh data dari server...</p>
+                  <p class="text-[10px] text-indigo-600 mt-0.5">Memproses koneksi asynchronous (Simulasi Delay 1,5 Detik)</p>
+                </div>
+
+                <!-- Display Box Result / Error Alert -->
+                <div id="sim2-result-container" class="p-4 bg-white rounded-xl border border-slate-200 min-h-[110px] flex flex-col justify-center items-center text-center">
+                  <i class="fa-solid fa-shield-halved text-slate-300 text-3xl mb-2"></i>
+                  <span class="text-xs text-slate-400 italic">Pilih salah satu tombol pengujian di atas untuk mensimulasikan alur data.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex justify-between items-center mt-2">
+              <span id="sim2-status-text" class="text-slate-600 font-medium text-[11px]">Uji alur fetch normal vs error handling.</span>
+              <button onclick="catatSimulasi(2)" id="btn-catat-2" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition shadow-2xs">
+                <i class="fa-solid fa-plus"></i> Catat Hasil Handling
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Pengamatan -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">4</span>
+              Tabel Pengamatan Praktikum
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Rekapitulasi hasil eksekusi pengujian Fetch API, struktur JSON, indikator loading, dan error handling.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-csv text-slate-700"></i> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs text-slate-700" id="tbl-pengamatan">
+            <thead class="bg-slate-50 text-slate-800 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-center w-12">No</th>
+                <th class="px-4 py-3">Modul Simulasi</th>
+                <th class="px-4 py-3">Endpoint / API Method</th>
+                <th class="px-4 py-3">Kondisi / Parameter Skrip</th>
+                <th class="px-4 py-3">Hasil Data / Respon Antarmuka</th>
+                <th class="px-4 py-3 text-center w-16 no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body" class="divide-y divide-slate-100 bg-white">
+              <tr id="empty-row">
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 5: Uji Kompetensi Web -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-300">5</span>
+              Uji Kompetensi: Asynchronous JavaScript & Fetch API
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Jawablah 20 pertanyaan pilihan ganda terkait Promise, Async/Await, JSON, Fetch API, dan Error Handling.</p>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-800 px-3 py-1 rounded-full border border-slate-200">20 Soal PG</span>
+        </div>
+
+        <form id="form-quiz" class="space-y-6">
+          <div id="quiz-container" class="space-y-6"></div>
+        </form>
+      </section>
+
+      <!-- Section Footer Action Buttons -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 no-print flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xs">
+        <div class="text-xs text-slate-500">
+          <p class="font-semibold text-slate-700">Petunjuk Penyelesaian:</p>
+          <p>Pastikan seluruh soal uji kompetensi dan simulasi telah dikerjakan sebelum mengirim LKPD.</p>
+        </div>
+        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+          <button onclick="resetFormPrompt()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-left"></i> Reset LKPD
+          </button>
+          <button id="btn-submit-lkpd" onclick="selesaikanLKPD()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Result Evaluasi -->
+  <div id="modal-result" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 transform transition-all">
+      <div class="text-center">
+        <div class="w-14 h-14 bg-indigo-100 text-indigo-800 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold border border-indigo-300">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-900">LKPD Selesai!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="modal-student-name">Nama Peserta Didik</p>
+
+        <div class="my-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nilai Akhir Uji Kompetensi</p>
+          <div class="text-5xl font-black text-slate-900 my-2" id="modal-score">0</div>
+          <p class="text-xs text-slate-600" id="modal-score-desc">Keterangan hasil evaluasi</p>
+        </div>
+
+        <div id="status-kirim-gas" class="mb-4 text-xs font-medium text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-circle-check text-slate-800"></i> Data berhasil tersimpan.
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Alert Toast Component -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // URL Web App Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPEPKoThpohH_5-4wu6aZmNXBOAVxeVCeNrdzUW1D80NgVjm4HTvAyXdO0PzBrqVPR/exec"; 
+    let waktuMulai = 0;
+    let tableData = [];
+
+    // State Log Simulasi
+    let lastSim1Log = { endpoint: "", method: "GET", param: "", res: "" };
+    let lastSim2Log = { endpoint: "", method: "GET", status: "", desc: "" };
+
+    // [DATA CSV SISWA]
+    const csvDataSiswa = `Sekolah,Kelas,Nama Lengkap
+SMK NEGERI 1 SINGKAWANG,X TJK,01 ALVINO
+SMK NEGERI 1 SINGKAWANG,X TJK,02 DEBORA RATU GIASTA GULTOM
+SMK NEGERI 1 SINGKAWANG,X TJK,03 DENIS
+SMK NEGERI 1 SINGKAWANG,X TJK,04 DEO REVALDY AHMAD
+SMK NEGERI 1 SINGKAWANG,X TJK,05 EVAN KRESNA LEE
+SMK NEGERI 1 SINGKAWANG,X TJK,06 FEBRIYANTO
+SMK NEGERI 1 SINGKAWANG,X TJK,07 HERKULANUS PERDY
+SMK NEGERI 1 SINGKAWANG,X TJK,08 HIQMAL LIONEL ALVIANO
+SMK NEGERI 1 SINGKAWANG,X TJK,09 INDRA KESUMAH
+SMK NEGERI 1 SINGKAWANG,X TJK,10 JERRY KURNIAWAN
+SMK NEGERI 1 SINGKAWANG,X TJK,11 KABILA SYIFA
+SMK NEGERI 1 SINGKAWANG,X TJK,12 KEYLA KIRANA PUTRI
+SMK NEGERI 1 SINGKAWANG,X TJK,13 KRISTIAN DAFI
+SMK NEGERI 1 SINGKAWANG,X TJK,14 LIONEL VAN EXAUDI HUTABARAT
+SMK NEGERI 1 SINGKAWANG,X TJK,15 MIRATUL TASYA RAMADHANI
+SMK NEGERI 1 SINGKAWANG,X TJK,16 MUHAMMAD RAYHAN AL GHIFARY
+SMK NEGERI 1 SINGKAWANG,X TJK,17 MUHAMMAD ZAKY RAFANANDO
+SMK NEGERI 1 SINGKAWANG,X TJK,18 NATARI KEYZA JUNIAR
+SMK NEGERI 1 SINGKAWANG,X TJK,19 NAZUA KASTINA
+SMK NEGERI 1 SINGKAWANG,X TJK,20 NUR AZANI
+SMK NEGERI 1 SINGKAWANG,X TJK,21 NURAINI
+SMK NEGERI 1 SINGKAWANG,X TJK,22 PIRANDA RAMADANI
+SMK NEGERI 1 SINGKAWANG,X TJK,23 REBHELIA
+SMK NEGERI 1 SINGKAWANG,X TJK,24 REVAN
+SMK NEGERI 1 SINGKAWANG,X TJK,25 RIA ADHA
+SMK NEGERI 1 SINGKAWANG,X TJK,26 RINDU PRANITA NUARI
+SMK NEGERI 1 SINGKAWANG,X TJK,27 RIVALDO RANGGA SAPUTRA
+SMK NEGERI 1 SINGKAWANG,X TJK,28 SELVIA
+SMK NEGERI 1 SINGKAWANG,X TJK,29 SITI MARIYAM
+SMK NEGERI 1 SINGKAWANG,X TJK,30 SYIFA FAHIRA
+SMK NEGERI 1 SINGKAWANG,X TJK,31 WULANDARI
+SMK NEGERI 1 SINGKAWANG,X TJK,32 YULIANTI
+SMK NEGERI 1 SINGKAWANG,X TJK,33 YUNKHI
+SMK NEGERI 1 SINGKAWANG,XI TJK,01 RIZKY JUNIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,02 SEMELIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,03 AHMAD NOVA RIANTO
+SMK NEGERI 1 SINGKAWANG,XI TJK,04 AIDANAZMAN DATINOV
+SMK NEGERI 1 SINGKAWANG,XI TJK,05 AJI SOPYAN DWI
+SMK NEGERI 1 SINGKAWANG,XI TJK,06 ANGELA DARA LISTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,07 ANNISA SALSA SHAFIRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,09 AYRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,10 AZURA
+SMK NEGERI 1 SINGKAWANG,XI TJK,11 BAYU CITRA PRATAMA
+SMK NEGERI 1 SINGKAWANG,XI TJK,12 BUNGA LESTARI
+SMK NEGERI 1 SINGKAWANG,XI TJK,13 CHASTLE ALPHA RICHIE
+SMK NEGERI 1 SINGKAWANG,XI TJK,14 DEVINA YUNA
+SMK NEGERI 1 SINGKAWANG,XI TJK,15 DINDA PUTRI RAHAYU
+SMK NEGERI 1 SINGKAWANG,XI TJK,16 EDWIN PRAYOGA
+SMK NEGERI 1 SINGKAWANG,XI TJK,17 FAJAR JULIANSYAH
+SMK NEGERI 1 SINGKAWANG,XI TJK,18 FRANSISCO DWI ADITYA
+SMK NEGERI 1 SINGKAWANG,XI TJK,19 GABRIEL ARESTA
+SMK NEGERI 1 SINGKAWANG,XI TJK,20 GLORIA ELSIA
+SMK NEGERI 1 SINGKAWANG,XI TJK,21 IHSAN AZHALLAH FAWWAZ
+SMK NEGERI 1 SINGKAWANG,XI TJK,22 INDRAYANI
+SMK NEGERI 1 SINGKAWANG,XI TJK,23 IRFAN RACHMANDANI FERDIAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,24 KEVIN APRILIO
+SMK NEGERI 1 SINGKAWANG,XI TJK,25 KHOIRUNNISA
+SMK NEGERI 1 SINGKAWANG,XI TJK,26 LAFYCA CALYZZA
+SMK NEGERI 1 SINGKAWANG,XI TJK,27 MAHLIK ADI SAPUTRA
+SMK NEGERI 1 SINGKAWANG,XI TJK,28 MUHAMAD ADHA NUR IKHSAN
+SMK NEGERI 1 SINGKAWANG,XI TJK,29 MUHAMMAD NABIL PASHA
+SMK NEGERI 1 SINGKAWANG,XI TJK,30 NURLILA FADILLA
+SMK NEGERI 1 SINGKAWANG,XI TJK,31 RENI
+SMK NEGERI 1 SINGKAWANG,XI TJK,32 RIA KURNIATI
+SMK NEGERI 1 SINGKAWANG,XI TJK,33 RIDWAN RAKA HARTONO
+SMK NEGERI 1 SINGKAWANG,XI TJK,34 SAEPUL MAJID
+SMK NEGERI 1 SINGKAWANG,XI TJK,35 VIONA
+SMK NEGERI 1 SINGKAWANG,XI TJK,36 WAHYU
+SMK MUDITA SINGKAWANG,XI TJKT,01 ALICIA JENIFER
+SMK MUDITA SINGKAWANG,XI TJKT,02 ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,03 CALVINIUS BUNARTO
+SMK MUDITA SINGKAWANG,XI TJKT,04 CHELSY VEROSSA
+SMK MUDITA SINGKAWANG,XI TJKT,05 DERMAN JOHAN
+SMK MUDITA SINGKAWANG,XI TJKT,06 DESTIAN WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,07 DISON NIKANOR
+SMK MUDITA SINGKAWANG,XI TJKT,08 ENNIO EDWARD
+SMK MUDITA SINGKAWANG,XI TJKT,09 FANI VANESA
+SMK MUDITA SINGKAWANG,XI TJKT,10 HANNY PHANGGESTY
+SMK MUDITA SINGKAWANG,XI TJKT,11 HERWIT BRIAN
+SMK MUDITA SINGKAWANG,XI TJKT,12 JAVI YANTO
+SMK MUDITA SINGKAWANG,XI TJKT,13 JEFRY
+SMK MUDITA SINGKAWANG,XI TJKT,14 JONATHAN VINCENTIUS
+SMK MUDITA SINGKAWANG,XI TJKT,15 KELLY ANGELA
+SMK MUDITA SINGKAWANG,XI TJKT,16 KEVIN KURNIAWAN
+SMK MUDITA SINGKAWANG,XI TJKT,17 LEONARDO
+SMK MUDITA SINGKAWANG,XI TJKT,18 LORENZO JONATHAN PANGESTU
+SMK MUDITA SINGKAWANG,XI TJKT,19 MEDY SANJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,20 MEYCHEN CARNELLA
+SMK MUDITA SINGKAWANG,XI TJKT,21 MICHELLE
+SMK MUDITA SINGKAWANG,XI TJKT,22 NESHA FREDELINA XHIAUW
+SMK MUDITA SINGKAWANG,XI TJKT,23 RAYMEND
+SMK MUDITA SINGKAWANG,XI TJKT,24 RICARDO
+SMK MUDITA SINGKAWANG,XI TJKT,25 SUYANBUN LIPFIANDY
+SMK MUDITA SINGKAWANG,XI TJKT,26 TRI WIJAYA
+SMK MUDITA SINGKAWANG,XI TJKT,27 VINCENT
+SMK MUDITA SINGKAWANG,XI TJKT,28 VINCENT ALBERTO FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,29 VINCENT BUN
+SMK MUDITA SINGKAWANG,XI TJKT,30 VINCENT LAUNARDY
+SMK MUDITA SINGKAWANG,XI TJKT,31 VINSEN
+SMK MUDITA SINGKAWANG,XI TJKT,32 VITO ALBERT FEROZ
+SMK MUDITA SINGKAWANG,XI TJKT,33 VITON
+SMK MUDITA SINGKAWANG,XI TJKT,34 WENNI NINGSI WONGSO
+SMK MUDITA SINGKAWANG,XI TJKT,35 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,36 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,37 WILLIAM
+SMK MUDITA SINGKAWANG,XI TJKT,38 YUVENSIUS
+SMK MUDITA SINGKAWANG,XII TJKT,01 DALVIN ANDERSON
+SMK MUDITA SINGKAWANG,XII TJKT,02 DANNIEL DAVE DAISUKE
+SMK MUDITA SINGKAWANG,XII TJKT,03 DENNY
+SMK MUDITA SINGKAWANG,XII TJKT,04 FERDI NOVENDI
+SMK MUDITA SINGKAWANG,XII TJKT,05 FLOURA
+SMK MUDITA SINGKAWANG,XII TJKT,06 HENGKY
+SMK MUDITA SINGKAWANG,XII TJKT,07 JIU PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,08 JULIANA DELVI WANTRIANI
+SMK MUDITA SINGKAWANG,XII TJKT,09 JULIYANTO
+SMK MUDITA SINGKAWANG,XII TJKT,10 JUN KIUH
+SMK MUDITA SINGKAWANG,XII TJKT,11 JUN PHEN
+SMK MUDITA SINGKAWANG,XII TJKT,12 JUNIATY
+SMK MUDITA SINGKAWANG,XII TJKT,14 KELVIN TERRENCE
+SMK MUDITA SINGKAWANG,XII TJKT,15 LEONARDO
+SMK MUDITA SINGKAWANG,XII TJKT,16 LEWIS MARCO
+SMK MUDITA SINGKAWANG,XII TJKT,17 LI NA
+SMK MUDITA SINGKAWANG,XII TJKT,18 MARCO GENIUS
+SMK MUDITA SINGKAWANG,XII TJKT,19 NELSON ALVARO
+SMK MUDITA SINGKAWANG,XII TJKT,21 NOFIKA
+SMK MUDITA SINGKAWANG,XII TJKT,22 NYIAN BUN
+SMK MUDITA SINGKAWANG,XII TJKT,23 NYUN CU
+SMK MUDITA SINGKAWANG,XII TJKT,24 OKTAVIANI
+SMK MUDITA SINGKAWANG,XII TJKT,25 RENDI
+SMK MUDITA SINGKAWANG,XII TJKT,26 RICO WIJAYA
+SMK MUDITA SINGKAWANG,XII TJKT,27 SI WEN
+SMK MUDITA SINGKAWANG,XII TJKT,28 SIAU KHIM
+SMK MUDITA SINGKAWANG,XII TJKT,29 SU CHUI
+SMK MUDITA SINGKAWANG,XII TJKT,30 TRI DERMERSIA
+SMK MUDITA SINGKAWANG,XII TJKT,31 VELIYAN VINSON
+SMK MUDITA SINGKAWANG,XII TJKT,32 VICKA ANJELICA
+SMK MUDITA SINGKAWANG,XII TJKT,33 WILLIAM
+SMK MUDITA SINGKAWANG,XII TJKT,34 WILLSON HANATA
+SMK MUDITA SINGKAWANG,XII TJKT,35 WILLY VEN`;
+
+    let dbSiswaParsed = {};
+
+    function initDatabaseSiswa() {
+      const lines = csvDataSiswa.trim().split('\n');
+      dbSiswaParsed = {};
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const sekolah = parts[0].trim();
+          const kelas = parts[1].trim();
+          const nama = parts[2].trim();
+          
+          if (!dbSiswaParsed[sekolah]) dbSiswaParsed[sekolah] = {};
+          if (!dbSiswaParsed[sekolah][kelas]) dbSiswaParsed[sekolah][kelas] = [];
+          dbSiswaParsed[sekolah][kelas].push(nama);
+        }
+      }
+
+      const selSekolah = document.getElementById('sel-sekolah');
+      if (selSekolah) {
+        selSekolah.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        Object.keys(dbSiswaParsed).forEach(sekolah => {
+          const opt = document.createElement('option');
+          opt.value = sekolah;
+          opt.textContent = sekolah;
+          selSekolah.appendChild(opt);
+        });
+      }
+    }
+
+    function updateDropdownKelas() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const selKelas = document.getElementById('sel-kelas');
+      const selNama = document.getElementById('sel-nama');
+
+      selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+      selNama.disabled = true;
+
+      if (sekolah && dbSiswaParsed[sekolah]) {
+        selKelas.disabled = false;
+        Object.keys(dbSiswaParsed[sekolah]).forEach(kelas => {
+          const opt = document.createElement('option');
+          opt.value = kelas;
+          opt.textContent = kelas;
+          selKelas.appendChild(opt);
+        });
+      } else {
+        selKelas.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function updateDropdownSiswa() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const selNama = document.getElementById('sel-nama');
+
+      selNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+
+      if (sekolah && kelas && dbSiswaParsed[sekolah] && dbSiswaParsed[sekolah][kelas]) {
+        selNama.disabled = false;
+        dbSiswaParsed[sekolah][kelas].forEach(nama => {
+          const optEl = document.createElement('option');
+          optEl.value = nama;
+          optEl.textContent = nama;
+          selNama.appendChild(optEl);
+        });
+      } else {
+        selNama.disabled = true;
+      }
+      validateIdentity();
+    }
+
+    function validateIdentity() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const mainContent = document.getElementById('main-content');
+      const warning = document.getElementById('validation-warning');
+      const badge = document.getElementById('identity-status-badge');
+      const statusText = document.getElementById('status-lkpd-text');
+
+      if (sekolah && kelas && nama) {
+        if (mainContent) {
+          mainContent.classList.remove('locked-section');
+          mainContent.classList.add('unlocked-section');
+        }
+        if (warning) warning.classList.add('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-800 font-medium px-3 py-1 rounded-full border border-emerald-300";
+          badge.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terverifikasi';
+        }
+        if (statusText) statusText.innerText = `Status: ${nama} (${kelas})`;
+        if (waktuMulai === 0) waktuMulai = Date.now();
+      } else {
+        if (mainContent) {
+          mainContent.classList.remove('unlocked-section');
+          mainContent.classList.add('locked-section');
+        }
+        if (warning) warning.classList.remove('hidden');
+        if (badge) {
+          badge.className = "text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full border border-slate-200";
+          badge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Wajib Diisi';
+        }
+        if (statusText) statusText.innerText = "Status: Mengisi Identitas";
+      }
+    }
+
+    // --- LOGIKA SIMULASI 1: PUBLIC API FETCHING ---
+    async function runSimulasi1() {
+      const apiType = document.getElementById('sim1-api-type').value;
+      const container = document.getElementById('sim1-api-container');
+      const codePreview = document.getElementById('sim1-code-preview');
+      const statusText = document.getElementById('sim1-status-text');
+
+      container.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-indigo-600 text-2xl mb-1"></i><span class="text-xs text-indigo-700">Mengambil data dari Public API...</span>`;
+
+      try {
+        let url = "";
+        if (apiType === 'quotes') {
+          url = "https://dummyjson.com/quotes/random";
+          codePreview.innerHTML = `async function getQuote() {\n  const response = await fetch("${url}");\n  const data = await response.json();\n  console.log(data);\n}`;
+          
+          const response = await fetch(url);
+          const data = await response.json();
+
+          container.innerHTML = `
+            <div class="text-left w-full">
+              <span class="text-[10px] font-bold tracking-widest text-indigo-600 uppercase bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Quote Result (JSON)</span>
+              <p class="text-xs font-semibold text-slate-800 mt-2 italic">"${data.quote}"</p>
+              <p class="text-[11px] font-bold text-slate-500 mt-1 text-right">— ${data.author}</p>
+            </div>
+          `;
+          lastSim1Log = { endpoint: url, method: "GET", param: "random quote", res: `Quote: "${data.quote.substring(0,25)}..."` };
+
+        } else if (apiType === 'weather') {
+          url = "https://api.open-meteo.com/v1/forecast?latitude=-0.02&longitude=109.34&current_weather=true";
+          codePreview.innerHTML = `async function getWeather() {\n  const res = await fetch("${url}");\n  const weather = await res.json();\n  displayCard(weather.current_weather);\n}`;
+
+          const response = await fetch(url);
+          const data = await response.json();
+          const cw = data.current_weather;
+
+          container.innerHTML = `
+            <div class="text-left w-full">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-[10px] font-bold tracking-widest text-indigo-600 uppercase bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Open-Meteo API</span>
+                <span class="text-xs font-extrabold text-indigo-900">${cw.temperature} °C</span>
+              </div>
+              <p class="text-xs text-slate-700 mt-1"><i class="fa-solid fa-location-dot text-indigo-500 mr-1"></i> <strong>Lokasi:</strong> Singkawang/Pontianak (-0.02, 109.34)</p>
+              <p class="text-xs text-slate-600"><i class="fa-solid fa-wind text-indigo-500 mr-1"></i> <strong>Kecepatan Angin:</strong> ${cw.windspeed} km/h</p>
+            </div>
+          `;
+          lastSim1Log = { endpoint: url, method: "GET", param: "lat=-0.02, long=109.34", res: `Suhu: ${cw.temperature}°C, Angin: ${cw.windspeed}km/h` };
+        }
+
+        statusText.innerText = "Data JSON eksternal berhasil diambil tanpa reload!";
+        showToast("Fetch Berhasil", "Data dari Public API diterima.", "success");
+
+      } catch (err) {
+        container.innerHTML = `
+          <div class="text-rose-600 text-xs font-semibold">
+            <i class="fa-solid fa-circle-exclamation text-lg mb-1"></i>
+            <p>Gagal mengambil data dari API eksternal.</p>
+          </div>
+        `;
+        statusText.innerText = "Error saat melakukan fetch API.";
+        showToast("Fetch Gagal", err.message, "warning");
+      }
+    }
+
+    // --- LOGIKA SIMULASI 2: LOADING STATE & ERROR ALERT ---
+    async function runSimulasi2(mode) {
+      const loadingEl = document.getElementById('sim2-loading');
+      const resultEl = document.getElementById('sim2-result-container');
+      const statusText = document.getElementById('sim2-status-text');
+
+      // 1. Tampilkan Indikator Loading Spinner
+      loadingEl.classList.remove('hidden');
+      resultEl.classList.add('hidden');
+      statusText.innerText = "Status: Mengirim HTTP Request (Loading State)...";
+
+      // Simulasi delay jaringan 1.5 detik
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      try {
+        let url = "";
+        if (mode === 'valid') {
+          url = "https://dummyjson.com/quotes/random";
+        } else {
+          // Endpoint sengaja dibuat salah/404 untuk menguji try...catch
+          url = "https://dummyjson.com/invalid-endpoint-path-404";
+        }
+
+        const response = await fetch(url);
+
+        // Uji HTTP Status Response
+        if (!response.ok) {
+          throw new Error(`HTTP Error! Status Code: ${response.status} (${response.statusText || 'Not Found'})`);
+        }
+
+        const data = await response.json();
+
+        // Render jika sukses
+        resultEl.innerHTML = `
+          <div class="text-left w-full bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-emerald-900">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-800 mb-1">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i> HTTP 200 OK — Request Berhasil
+            </div>
+            <p class="text-xs text-slate-700 italic">"${data.quote}"</p>
+          </div>
+        `;
+        lastSim2Log = { endpoint: url, method: "GET", status: "200 OK", desc: "Berhasil di-fetch dengan loading spinner" };
+        statusText.innerText = "Status 200: Data berhasil diterima!";
+        showToast("Request Sukses", "Response 200 OK diterima dari server.", "success");
+
+      } catch (error) {
+        // Blok Catch Menangani Error
+        resultEl.innerHTML = `
+          <div class="text-left w-full bg-rose-50 border border-rose-200 p-3 rounded-xl text-rose-900">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-rose-800 mb-1">
+              <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Catch Error Handling Dipicu!
+            </div>
+            <p class="text-xs text-rose-700 font-mono">${error.message}</p>
+            <p class="text-[10px] text-slate-500 mt-1">Endpoint API tidak ditemukan. Pesan kesalahan berhasil ditangkap oleh blok try...catch.</p>
+          </div>
+        `;
+        lastSim2Log = { endpoint: "https://dummyjson.com/invalid-endpoint-path-404", method: "GET", status: "404 Not Found", desc: "Diproses oleh blok catch (Error Alert Tampil)" };
+        statusText.innerText = "Catch Executed: Pesan Error Ditampilkan.";
+        showToast("Catch Executed", error.message, "warning");
+
+      } finally {
+        // Sembunyikan Loading State
+        loadingEl.classList.add('hidden');
+        resultEl.classList.remove('hidden');
+      }
+    }
+
+    // LOG RECORDING & TABLE MANAGEMENT
+    function catatSimulasi(simNum) {
+      let logEntry = {};
+
+      if (simNum === 1) {
+        if (!lastSim1Log.endpoint) {
+          showToast("Perhatian", "Jalankan Simulasi 1 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 1: Public API Fetching",
+          fitur: lastSim1Log.endpoint,
+          input: `Method: ${lastSim1Log.method} | Param: ${lastSim1Log.param}`,
+          output: lastSim1Log.res
+        };
+      } else if (simNum === 2) {
+        if (!lastSim2Log.endpoint) {
+          showToast("Perhatian", "Jalankan Simulasi 2 terlebih dahulu!", "warning");
+          return;
+        }
+        logEntry = {
+          modul: "Simulasi 2: Loading & Error Alert",
+          fitur: lastSim2Log.endpoint,
+          input: `HTTP Status: ${lastSim2Log.status}`,
+          output: lastSim2Log.desc
+        };
+      }
+
+      tableData.push(logEntry);
+      renderTabelPengamatan();
+      showToast("Tercatat", "Hasil simulasi dipindahkan ke tabel pengamatan.", "success");
+    }
+
+    function deleteDataRow(index) {
+      tableData.splice(index, 1);
+      renderTabelPengamatan();
+    }
+
+    function renderTabelPengamatan() {
+      const tbody = document.getElementById('tbl-body');
+      tbody.innerHTML = '';
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr id="empty-row"><td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">Belum ada data. Lakukan uji coba simulasi lalu klik tombol "+ Catat Hasil".</td></tr>`;
+        return;
+      }
+
+      tableData.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center font-bold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3 font-semibold text-slate-800">${row.modul}</td>
+          <td class="px-4 py-3 text-[11px] font-mono text-indigo-700 bg-slate-50 rounded truncate max-w-[180px]">${row.fitur}</td>
+          <td class="px-4 py-3 text-slate-700 italic">${row.input}</td>
+          <td class="px-4 py-3 font-bold text-slate-900">${row.output}</td>
+          <td class="px-4 py-3 text-center no-print">
+            <button onclick="deleteDataRow(${idx})" class="text-slate-400 hover:text-slate-700 font-medium text-xs p-1">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (tableData.length === 0) {
+        showToast("Perhatian", "Belum ada data pengamatan untuk di-export!", "warning");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,No,Modul Simulasi,Endpoint/API Method,Kondisi Skrip,Hasil Data Output\n";
+      tableData.forEach((d, i) => {
+        csvContent += `${i + 1},"${d.modul}","${d.fitur}","${d.input}","${d.output}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "LKPD14_Async_FetchAPI_Pengamatan.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Berhasil", "File CSV hasil praktikum terunduh.", "success");
+    }
+
+    // QUESTION BANK LKPD 14 (20 SOAL PG - Asynchronous JS & Fetch API)
+    const questionBankWeb = [
+      { id: 1, q: "Apa tujuan utama penggunaan pemrograman asynchronous pada JavaScript?", options: ["A. Mengubah sintaks HTML menjadi file CSS", "B. Menjalankan proses berat/lambat di latar belakang tanpa menghentikan (blocking) eksekusi kode lainnya", "C. Mempercepat koneksi internet pengguna", "D. Mengenkripsi kata sandi dalam database", "E. Menggantikan seluruh fungsi CSS dalam tata letak web"], ans: "B" },
+      { id: 2, q: "Sifat eksekusi JavaScript standar yang mengeksekusi instruksi baris demi baris secara berurutan dan menunggunya hingga selesai disebut...", options: ["A. Parallel Processing", "B. Synchronous (Blocking)", "C. Multi-threaded Processing", "D. Asynchronous (Non-blocking)", "E. Distributed Computing"], ans: "B" },
+      { id: 3, q: "Objek JavaScript yang merepresentasikan janji hasil operasi asynchronous (berhasil atau gagal) di masa mendatang adalah...", options: ["A. Promise", "B. Callback Hell", "C. Function Statement", "D. Event Listener", "E. JSON Object"], ans: "A" },
+      { id: 4, q: "Tiga kondisi (state) utama yang dimiliki oleh sebuah Promise di JavaScript adalah...", options: ["A. Start, Process, Stop", "B. Pending, Fulfilled, Rejected", "C. Open, Execute, Close", "D. True, False, Null", "E. Input, Output, Error"], ans: "B" },
+      { id: 5, q: "Kata kunci yang diletakkan sebelum deklarasi fungsi untuk menandakan bahwa fungsi tersebut menangani operasi asynchronous adalah...", options: ["A. await", "B. promise", "C. async", "D. fetch", "E. defer"], ans: "C" },
+      { id: 6, q: "Operator 'await' di JavaScript hanya dapat digunakan di dalam fungsi yang dideklarasikan dengan...", options: ["A. kata kunci static", "B. kata kunci async", "C. kata kunci function*", "D. kata kunci export", "E. kata kunci void"], ans: "B" },
+      { id: 7, q: "Fungsi utama dari operator 'await' saat memanggil fungsi berbasis Promise adalah...", options: ["A. Menghentikan seluruh aplikasi secara permanen", "B. Menunda eksekusi baris berikutnya sampai Promise selesai (settled)", "C. Mengompresi file gambar secara otomatis", "D. Mengubah tipe data String menjadi Number", "E. Membuat perulangan loop tanpa batas"], ans: "B" },
+      { id: 8, q: "Format pertukaran data teks yang ringan, terstruktur, dan mudah dibaca (JavaScript Object Notation) disebut...", options: ["A. XML", "B. JSON", "C. CSV", "D. YAML", "E. HTML"], ans: "B" },
+      { id: 9, q: "Fungsi/method bawaan JavaScript yang digunakan untuk mengubah teks string format JSON menjadi objek JavaScript adalah...", options: ["A. JSON.stringify()", "B. JSON.parse()", "C. JSON.encode()", "D. JSON.toObject()", "E. JSON.convert()"], ans: "B" },
+      { id: 10, q: "Fungsi/method JavaScript yang digunakan untuk mengubah objek JavaScript menjadi string berformat JSON adalah...", options: ["A. JSON.parse()", "B. JSON.stringify()", "C. JSON.serialize()", "D. JSON.toString()", "E. JSON.format()"], ans: "B" },
+      { id: 11, q: "API standar browser modern yang digunakan untuk melakukan HTTP Request ke server eksternal secara asynchronous adalah...", options: ["A. fetch()", "B. axios()", "C. getHTTP()", "D. requestAPI()", "E. loadData()"], ans: "A" },
+      { id: 12, q: "Secara bawaan (default), method HTTP yang digunakan oleh fungsi fetch(url) ketika dipanggil tanpa opsi tambahan adalah...", options: ["A. POST", "B. PUT", "C. DELETE", "D. GET", "E. PATCH"], ans: "D" },
+      { id: 13, q: "Mengapa hasil pemanggilan fetch() perlu diproses dengan 'await response.json()'?", options: ["A. Karena fetch() mengembalikan objek Response Stream yang perlu dibaca dan diurai format JSON-nya", "B. Untuk menghapus cookie browser", "C. Karena fetch() langsung mengembalikan kode HTML", "D. Agar skrip JavaScript terhindar dari virus", "E. Untuk mengubah data menjadi format gambar PNG"], ans: "A" },
+      { id: 14, q: "Properti boolean pada objek Response fetch() yang bernilai 'true' jika status HTTP berada pada rentang 200–299 adalah...", options: ["A. response.status", "B. response.ok", "C. response.success", "D. response.valid", "E. response.done"], ans: "B" },
+      { id: 15, q: "Struktur penanganan kesalahan (error handling) yang digunakan untuk menangkap error pada fungsi async/await adalah...", options: ["A. if...else", "B. switch...case", "C. try...catch", "D. do...while", "E. for...in"], ans: "C" },
+      { id: 16, q: "Dalam blok try...catch...finally, bagian kode yang akan SELALU dieksekusi baik saat request berhasil maupun gagal adalah...", options: ["A. try", "B. catch", "C. error", "D. finally", "E. throw"], ans: "D" },
+      { id: 17, q: "Apa peran penting dari 'Loading State' (indikator pemrosesan) dalam antarmuka web berbasis Fetch API?", options: ["A. Mengamankan kata sandi pengguna", "B. Memberikan umpan balik visual kepada pengguna bahwa proses pengambilan data sedang berlangsung di latar belakang", "C. Menghentikan koneksi internet pengguna", "D. Mengubah warna tema aplikasi menjadi gelap", "E. Menyimpan data otomatis ke dalam LocalStorage"], ans: "B" },
+      { id: 18, q: "Kode status respons HTTP (HTTP Status Code) yang menandakan bahwa resource/endpoint berhasil ditemukan dan permintaan sukses adalah...", options: ["A. 200 OK", "B. 404 Not Found", "C. 500 Internal Server Error", "D. 403 Forbidden", "E. 301 Moved Permanently"], ans: "A" },
+      { id: 19, q: "Jika fetch() memanggil URL endpoint yang salah dan server mengembalikan status 404, tindakan yang tepat di JS adalah...", options: ["A. Membiarkan aplikasi crash", "B. Memeriksa status (!response.ok) lalu melempar (throw) Error kustom ke blok catch", "C. Mengulang request tanpa batas (infinite loop)", "D. Menutup tab browser secara otomatis", "E. Mengubah response menjadi array kosong tanpa pemberitahuan"], ans: "B" },
+      { id: 20, q: "Keunggulan utama pemanfaatan Fetch API pada pembuatan Single Page Application (SPA) modern adalah...", options: ["A. Server tidak lagi memerlukan basis data", "B. Data halaman web dapat diperbarui secara dinamis tanpa memuat ulang (reload) seluruh halaman", "C. HTML dan CSS tidak lagi dibutuhkan", "D. Aplikasi web berjalan secara offline tanpa koneksi", "E. Pengguna tidak perlu mengetikkan URL web"], ans: "B" }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      questionBankWeb.forEach((q, idx) => {
+        const qCard = document.createElement('div');
+        qCard.className = "p-4 sm:p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-indigo-300 transition";
+        qCard.id = `q-block-${q.id}`;
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          const optVal = opt.charAt(0);
+          optionsHtml += `
+            <label class="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-white cursor-pointer transition text-xs font-medium text-slate-700">
+              <input type="radio" name="q${q.id}" value="${optVal}" class="mt-0.5 accent-indigo-600">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <p class="font-semibold text-xs sm:text-sm text-slate-900 mb-3 flex items-start gap-2">
+            <span class="bg-indigo-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">${idx + 1}</span>
+            <span>${q.q}</span>
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            ${optionsHtml}
+          </div>
+          <div id="feedback-q${q.id}" class="mt-2 text-xs hidden p-2.5 rounded-lg"></div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    async function selesaikanLKPD() {
+      const sekolah = document.getElementById('sel-sekolah').value;
+      const kelas = document.getElementById('sel-kelas').value;
+      const nama = document.getElementById('sel-nama').value;
+      const btnSubmit = document.getElementById('btn-submit-lkpd');
+
+      if (!sekolah || !kelas || !nama) {
+        showToast("Identitas Wajib", "Harap lengkapi Identitas Peserta Didik terlebih dahulu!", "warning");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim Data...`;
+
+      let skorBenar = 0;
+      questionBankWeb.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback-q${q.id}`);
+        feedbackEl.classList.remove('hidden');
+
+        if (selected) {
+          if (selected.value === q.ans) {
+            skorBenar++;
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <b>Benar!</b> Jawaban Anda tepat.`;
+          } else {
+            feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200";
+            feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i> <b>Salah.</b> Jawaban benar: <b>${q.ans}</b>`;
+          }
+        } else {
+          feedbackEl.className = "mt-2 text-xs p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200";
+          feedbackEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i> Belum dijawab. Jawaban benar: <b>${q.ans}</b>`;
+        }
+      });
+
+      const nilaiAkhir = Math.round((skorBenar / questionBankWeb.length) * 100);
+      const durasiDetik = waktuMulai > 0 ? Math.floor((Date.now() - waktuMulai) / 1000) : 0;
+
+      const payload = {
+        sekolah: sekolah,
+        kelas: kelas,
+        nama_lengkap: nama,
+        pilihan_lkpd: "LKPD 14: Asynchronous JavaScript dan Fetch API",
+        durasi_detik: durasiDetik,
+        skor_pg_benar: skorBenar,
+        nilai_akhir: nilaiAkhir
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Data berhasil terkirim ke sistem!`;
+        showToast("Berhasil", "Data LKPD berhasil dikirim.", "success");
+      } catch (err) {
+        console.error("Gagal mengirim data:", err);
+        document.getElementById('status-kirim-gas').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Gagal terhubung ke server/database.`;
+        showToast("Gagal Kirim", "Terjadi kesalahan koneksi saat mengirim data.", "warning");
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Selesaikan & Kirim LKPD`;
+      }
+
+      document.getElementById('modal-student-name').innerText = `${nama} | ${kelas} - ${sekolah}`;
+      document.getElementById('modal-score').innerText = nilaiAkhir;
+
+      let desc = "Sangat Baik! Anda menguasai konsep Promise, Async/Await, Fetch API, serta Error Handling.";
+      if (nilaiAkhir < 75) desc = "Cukup Baik. Pelajari kembali mengenai penanganan status HTTP dan blok try...catch.";
+      if (nilaiAkhir < 60) desc = "Perlu Peningkatan. Ulangi materi Asynchronous Programming dan pengolahan data JSON.";
+      document.getElementById('modal-score-desc').innerText = desc;
+
+      document.getElementById('modal-result').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-result').classList.add('hidden');
+    }
+
+    function resetFormPrompt() {
+      if (confirm("Apakah Anda yakin ingin mereset seluruh isian LKPD ini?")) {
+        location.reload();
+      }
+    }
+
+    function showToast(title, msg, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = "fa-circle-info text-indigo-400";
+      if (type === "success") icon = "fa-circle-check text-emerald-400";
+      if (type === "warning") icon = "fa-triangle-exclamation text-rose-400";
+
+      toast.className = "pointer-events-auto bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-slate-700 flex items-start gap-2 text-xs max-w-xs transition transform translate-y-2 opacity-0";
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-sm mt-0.5"></i>
+        <div>
+          <p class="font-bold">${title}</p>
+          <p class="text-[11px] text-slate-300">${msg}</p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Inisialisasi Saat Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabaseSiswa();
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>
